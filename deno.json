@@ -1,7 +1,8 @@
 {
   "importMap": "./import-map.json",
   "tasks": {
-    "dev": "deno run --watch --node-modules-dir --allow-net --allow-env --allow-run --allow-read ./main.tsx"
+    "dev": "deno run --watch --node-modules-dir --allow-net --allow-env --allow-run --allow-read ./main.tsx",
+    "start": "deno run --node-modules-dir --allow-net --allow-env --allow-run --allow-read ./main.tsx"
   },
   "compilerOptions": {
     "lib": [

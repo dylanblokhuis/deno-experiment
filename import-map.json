@@ -2,7 +2,7 @@
   "imports": {
     "react": "https://esm.sh/react@18.2.0",
     "react-dom": "https://esm.sh/react-dom@18.2.0",
-    "react-dom/server": "https://esm.sh/react-dom@18.2.0/server",
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
+    "react-dom/server": "https://esm.sh/v96/react-dom@18.2.0/deno/server.js",
+    "react-dom/client": "https://esm.sh/v96/react-dom@18.2.0/deno/client.js"
   }
 }

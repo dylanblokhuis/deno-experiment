@@ -4,37 +4,39 @@ export interface App {
   scripts: string[],
   routePath: string,
   loaderData: any
+  actionData: any
 }
 export const AppContext = React.createContext<App | null>(null);
 
 export function Scripts() {
   const context = React.useContext(AppContext);
 
-  return <>
-    {context?.scripts.map((key) => (
-      <script key={key} type="module" src={key}></script>
-    ))}
+  const entryModule = context?.scripts.find(script => {
+    return script.startsWith("dist/entry.client");
+  });
 
+  return <>
     <Suspense>
       <script dangerouslySetInnerHTML={{ __html: `window.appContext = ${JSON.stringify(context)}` }}></script>
     </Suspense>
-
-    {typeof Deno !== "undefined" && (
-      <script type="module" dangerouslySetInnerHTML={{
-        __html: `
-        import { hydrate } from "./dist/entry.client.js"
-        import * as Route from "./${context?.routePath}"
+    {context?.scripts.map((key) => (
+      <link rel="modulepreload" key={key} href={`/${key}`} />
+    ))}
+    <script type="module" async dangerouslySetInnerHTML={{
+      __html: `
+        import { hydrate } from "/${entryModule}";
+        import * as Route from "/${context?.routePath}"
 
         hydrate(Route)
         `}}>
-      </script>
-    )}
+    </script>
   </>
 }
 
 export interface RouteModule {
   default: React.FC,
   loader?: (request: Request) => Promise<Response>,
+  action?: (request: Request) => Promise<Response>,
 }
 
 export function useLoaderData<T = AppData>(): SerializeFrom<T> {

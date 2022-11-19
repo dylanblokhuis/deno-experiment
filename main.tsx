@@ -6,66 +6,64 @@ import "npm:react-dom@18"
 import { serve } from "https://deno.land/std@0.165.0/http/server.ts";
 import { serveDir } from "https://deno.land/std@0.165.0/http/file_server.ts";
 import * as esbuild from "https://deno.land/x/esbuild@v0.14.51/mod.js";
+import { Hono } from 'https://deno.land/x/hono@v2.5.2/mod.ts'
 import { handleRequest } from "./entry.server.tsx"
 import { RouteModule } from "./lib.tsx";
+import routes from "./routes.tsx"
+
+const app = new Hono()
+for (const [route, module] of routes) {
+  app.all(route, (c) => handler(c.req, module));
+}
+app.get("/dist/*", (c) => serveDir(c.req, {
+  fsRoot: ".",
+  quiet: true
+}));
 
 async function bundle(moduleRoute: string): Promise<esbuild.Metafile> {
   const res = await esbuild.build({
-    entryPoints: ["./lib.tsx", "./root.tsx", "entry.client.tsx", moduleRoute],
+    entryPoints: ["entry.client.tsx", moduleRoute],
     platform: "browser",
     format: "esm",
     bundle: true,
     splitting: true,
     outdir: "dist",
     minify: false,
+    treeShaking: true,
+    entryNames: "[dir]/[name]-[hash]",
+    chunkNames: "_shared/[name]-[hash]",
+    assetNames: "_assets/[name]-[hash]",
     // outdir: ".",
     // outfile: "",
     // write: false,
     metafile: true,
-    incremental: true
+    incremental: false
     // plugins: [],
   })
 
   return res.metafile;
 }
 
-async function handler(request: Request) {
-  const url = new URL(request.url);
 
-  if (url.pathname.startsWith("/dist")) {
-    return serveDir(request, {
-      fsRoot: ".",
-    });
-  }
-
-  let modulePath;
-  if (url.pathname === "/") {
-    modulePath = "./routes/home.tsx";
-  }
-
-  if (url.pathname === "/admin") {
-    modulePath = "./routes/admin.tsx";
-  }
-
-  if (!modulePath) {
-    return new Response("Not found", { status: 404 });
-  }
-
+async function handler(request: Request, modulePath: string) {
   const module = await import(modulePath) as RouteModule;
-
   let loaderData: any;
   if (module.loader) {
     loaderData = module.loader(request);
   }
 
-  const metafile = await bundle(modulePath);
+  let actionData: any;
+  if (module.action && request.method === "POST") {
+    actionData = module.action(request)
+  }
 
+  const metafile = await bundle(modulePath);
   const route = Object.entries(metafile.outputs).find(([key, value]) => {
     return value.entryPoint?.startsWith("routes/");
   });
 
   if (!route) {
-    return new Response("Not found", { status: 404 });
+    throw new Error("This module doesnt exist")
   }
 
   const res = handleRequest(
@@ -73,7 +71,8 @@ async function handler(request: Request) {
     {
       scripts: Object.keys(metafile.outputs),
       routePath: route[0],
-      loaderData
+      loaderData,
+      actionData
     }
   )
 
@@ -84,4 +83,4 @@ async function handler(request: Request) {
   });
 }
 
-await serve(handler, { port: 3000 });
+await serve(app.fetch, { port: 3000 });

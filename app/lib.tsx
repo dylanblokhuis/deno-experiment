@@ -1,4 +1,4 @@
-import React, { Suspense } from "react"
+import React from "react"
 
 export interface App {
   scripts: string[],
@@ -16,12 +16,10 @@ export function Scripts() {
   });
 
   return <>
-    <Suspense>
-      <script dangerouslySetInnerHTML={{ __html: `window.appContext = ${JSON.stringify(context)}` }}></script>
-    </Suspense>
     {context?.scripts.map((key) => (
       <link rel="modulepreload" key={key} href={`/${key}`} />
     ))}
+    <script dangerouslySetInnerHTML={{ __html: `window.appContext = ${JSON.stringify(context)}` }}></script>
     <script type="module" async dangerouslySetInnerHTML={{
       __html: `
         import { hydrate } from "/${entryModule}";

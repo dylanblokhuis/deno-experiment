@@ -22,6 +22,7 @@ export function hydrate(Module: RouteModule) {
   } else {
     // Safari doesn't support requestIdleCallback
     // https://caniuse.com/requestidlecallback
+    // deno-lint-ignore no-window-prefix
     window.setTimeout(() => callback(Module), 1);
   }
 }

@@ -7,13 +7,13 @@ import { serve } from "https://deno.land/std@0.165.0/http/server.ts";
 import { serveDir } from "https://deno.land/std@0.165.0/http/file_server.ts";
 import * as esbuild from "https://deno.land/x/esbuild@v0.14.51/mod.js";
 import { Hono } from 'https://deno.land/x/hono@v2.5.2/mod.ts'
-import { handleRequest } from "./entry.server.tsx"
-import { RouteModule } from "./lib.tsx";
+import { handleRequest } from "./app/entry.server.tsx"
+import { RouteModule } from "./app/lib.tsx";
 import routes from "./routes.tsx"
 
 const app = new Hono()
 for (const [route, module] of routes) {
-  app.all(route, (c) => handler(c.req, module));
+  app.get(route, (c) => handler(c.req, module)).post(route, (c) => handler(c.req, module));
 }
 app.get("/dist/*", (c) => serveDir(c.req, {
   fsRoot: ".",
@@ -22,7 +22,7 @@ app.get("/dist/*", (c) => serveDir(c.req, {
 
 async function bundle(moduleRoute: string): Promise<esbuild.Metafile> {
   const res = await esbuild.build({
-    entryPoints: ["entry.client.tsx", moduleRoute],
+    entryPoints: ["./app/entry.client.tsx", moduleRoute],
     platform: "browser",
     format: "esm",
     bundle: true,
@@ -59,10 +59,11 @@ async function handler(request: Request, modulePath: string) {
 
   const metafile = await bundle(modulePath);
   const route = Object.entries(metafile.outputs).find(([key, value]) => {
-    return value.entryPoint?.startsWith("routes/");
+    return value.entryPoint?.startsWith("app/routes/");
   });
 
   if (!route) {
+    console.error(route)
     throw new Error("This module doesnt exist")
   }
 

@@ -1,4 +1,5 @@
 export default [
-  ["/", "./routes/home.tsx"],
-  ["/admin", "./routes/admin.tsx"],
+  ["/", "./app/routes/home.tsx"],
+  ["/admin", "./app/routes/admin.tsx"],
+  ["/admin/*", "./app/routes/admin.tsx"],
 ]

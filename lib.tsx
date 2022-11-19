@@ -42,6 +42,7 @@ export function useLoaderData<T = AppData>(): SerializeFrom<T> {
   return context?.loaderData;
 }
 
+// this part is created by the remix team, all credit to them https://github.com/remix-run/remix
 type AppData = any;
 
 type JsonPrimitive =

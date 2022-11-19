@@ -1,0 +1,121 @@
+{
+  "version": "2",
+  "remote": {
+    "https://deno.land/std@0.150.0/_util/assert.ts": "e94f2eb37cebd7f199952e242c77654e43333c1ac4c5c700e929ea3aa5489f74",
+    "https://deno.land/std@0.150.0/_util/os.ts": "3b4c6e27febd119d36a416d7a97bd3b0251b77c88942c8f16ee5953ea13e2e49",
+    "https://deno.land/std@0.150.0/path/_constants.ts": "df1db3ffa6dd6d1252cc9617e5d72165cd2483df90e93833e13580687b6083c3",
+    "https://deno.land/std@0.150.0/path/_interface.ts": "ee3b431a336b80cf445441109d089b70d87d5e248f4f90ff906820889ecf8d09",
+    "https://deno.land/std@0.150.0/path/_util.ts": "c1e9686d0164e29f7d880b2158971d805b6e0efc3110d0b3e24e4b8af2190d2b",
+    "https://deno.land/std@0.150.0/path/common.ts": "bee563630abd2d97f99d83c96c2fa0cca7cee103e8cb4e7699ec4d5db7bd2633",
+    "https://deno.land/std@0.150.0/path/glob.ts": "cb5255638de1048973c3e69e420c77dc04f75755524cb3b2e160fe9277d939ee",
+    "https://deno.land/std@0.150.0/path/mod.ts": "4945b430b759b0b3d98f2a278542cbcf95e0ad2bd8eaaed3c67322b306b2b346",
+    "https://deno.land/std@0.150.0/path/posix.ts": "c1f7afe274290ea0b51da07ee205653b2964bd74909a82deb07b69a6cc383aaa",
+    "https://deno.land/std@0.150.0/path/separator.ts": "fe1816cb765a8068afb3e8f13ad272351c85cbc739af56dacfc7d93d710fe0f9",
+    "https://deno.land/std@0.150.0/path/win32.ts": "bd7549042e37879c68ff2f8576a25950abbfca1d696d41d82c7bca0b7e6f452c",
+    "https://deno.land/std@0.165.0/collections/_utils.ts": "fd759867be7a0047a1fa89ec89f7b58ebe3f2f7f089a8f4e416eb30c5d764868",
+    "https://deno.land/std@0.165.0/collections/deep_merge.ts": "a4252c99f82fe4051c6dfbe0c8ba839888c4233ab99c556ba519c5290011c281",
+    "https://deno.land/std@0.165.0/crypto/_fnv/fnv32.ts": "aa9bddead8c6345087d3abd4ef35fb9655622afc333fc41fff382b36e64280b5",
+    "https://deno.land/std@0.165.0/crypto/_fnv/fnv64.ts": "625d7e7505b6cb2e9801b5fd6ed0a89256bac12b2bbb3e4664b85a88b0ec5bef",
+    "https://deno.land/std@0.165.0/crypto/_fnv/index.ts": "a8f6a361b4c6d54e5e89c16098f99b6962a1dd6ad1307dbc97fa1ecac5d7060a",
+    "https://deno.land/std@0.165.0/crypto/_fnv/util.ts": "4848313bed7f00f55be3cb080aa0583fc007812ba965b03e4009665bde614ce3",
+    "https://deno.land/std@0.165.0/crypto/_util.ts": "4a8cb74e7273d2400aa6da582ec58078cf8d54bc66530592048cbd7cc4152621",
+    "https://deno.land/std@0.165.0/crypto/keystack.ts": "e481eed28007395e554a435e880fee83a5c73b9259ed8a135a75e4b1e4f381f7",
+    "https://deno.land/std@0.165.0/crypto/mod.ts": "ee76e7df2e3346a8233861ecb66659da37c7b7fa730b48d765f3fb80fff1819e",
+    "https://deno.land/std@0.165.0/crypto/util.ts": "93fc9dbaa62421538ad60ee65337cbf1d8a0298fac3c4f70b37e5627e7e129eb",
+    "https://deno.land/std@0.165.0/http/file_server.ts": "b4c5bad224899fc2489d94237bc1e7654c06994f37246c37ea53a347ae72ea59",
+    "https://deno.land/std@0.165.0/http/server.ts": "e99c1bee8a3f6571ee4cdeb2966efad465b8f6fe62bec1bdb59c1f007cc4d155",
+    "https://deno.land/std@0.165.0/http/util.ts": "759a2b57b44b722d2033d0dfe077f7e9a257f431db6d0319b78dcfebed0adb1e",
+    "https://deno.land/std@0.165.0/media_types/_util.ts": "ce9b4fc4ba1c447dafab619055e20fd88236ca6bdd7834a21f98bd193c3fbfa1",
+    "https://deno.land/std@0.165.0/media_types/mod.ts": "74885352135624774b8cd164f3a9d866aac1e0dc3ccb5412e2a2d56ed4b1fc99",
+    "https://deno.land/std@0.165.0/media_types/vendor/mime-db.v1.52.0.ts": "724cee25fa40f1a52d3937d6b4fbbfdd7791ff55e1b7ac08d9319d5632c7f5af",
+    "https://deno.land/std@0.165.0/version.ts": "045f5c85d88e96617fadf02325f2ce0e2e751898b076344a1fb42a1a6f73a8ec",
+    "https://deno.land/x/denoflate@1.2.1/mod.ts": "f5628e44b80b3d80ed525afa2ba0f12408e3849db817d47a883b801f9ce69dd6",
+    "https://deno.land/x/denoflate@1.2.1/pkg/denoflate.js": "b9f9ad9457d3f12f28b1fb35c555f57443427f74decb403113d67364e4f2caf4",
+    "https://deno.land/x/denoflate@1.2.1/pkg/denoflate_bg.wasm.js": "d581956245407a2115a3d7e8d85a9641c032940a8e810acbd59ca86afd34d44d",
+    "https://deno.land/x/esbuild@v0.14.51/mod.d.ts": "c142324d0383c39de0d7660cd207a7f7f52c7198a13d7d3281c0d636a070f441",
+    "https://deno.land/x/esbuild@v0.14.51/mod.js": "7432566c71fac77637822dc230319c7392a2d2fef51204c9d12c956d7093c279",
+    "https://deno.land/x/esbuild_deno_loader@0.5.2/deps.ts": "bf83c27b7787b2f245fa0bc0b99f5041aa949c000a81c016cfe828d06b476d37",
+    "https://deno.land/x/esbuild_deno_loader@0.5.2/mod.ts": "bc111a68f323dbdb6edec68dd558ab732b27866d2ef304708872d763387b65d7",
+    "https://deno.land/x/esbuild_deno_loader@0.5.2/src/deno.ts": "0e83ccabbe2b004389288e38df2031b79eb347df2d139fce9394d8e88a11f259",
+    "https://deno.land/x/esbuild_deno_loader@0.5.2/src/native_loader.ts": "343854a566cf510cf25144f7c09fc0c1097780a31830305142a075d12bb697ba",
+    "https://deno.land/x/esbuild_deno_loader@0.5.2/src/portable_loader.ts": "35b6c526eed8c2c781a3256b23c30aa7cce69c0ef1d583c15528663287ba18a3",
+    "https://deno.land/x/esbuild_deno_loader@0.5.2/src/shared.ts": "b64749cd8c0f6252a11498bd8758ef1220003e46b2c9b68e16da63fd7e92b13a",
+    "https://deno.land/x/importmap@0.2.1/_util.ts": "ada9a9618b537e6c0316c048a898352396c882b9f2de38aba18fd3f2950ede89",
+    "https://deno.land/x/importmap@0.2.1/mod.ts": "ae3d1cd7eabd18c01a4960d57db471126b020f23b37ef14e1359bbb949227ade",
+    "https://esm.sh/react-dom@18.2.0": "80d06a8d542219fadbdc7534795934205fcfe682f770d0379f0c2c97b332553c",
+    "https://esm.sh/react-dom@18.2.0/server": "d573360693005ec5f79edbbde31887aa7ce0aac53c7d96428977d027613ee43d",
+    "https://esm.sh/react@18.2.0": "84aa07282d2f3c843f7d56daeae0be41ceae768391c4418f7358dd64e8fe4eca",
+    "https://esm.sh/stable/react@18.2.0/deno/react.js": "806868069cfdb815e028419cf07ebc7a7bcba7f9e31dec9e3a045b9f8e82c1ed",
+    "https://esm.sh/v96/@types/prop-types@15.7.5/index.d.ts": "6a386ff939f180ae8ef064699d8b7b6e62bc2731a62d7fbf5e02589383838dea",
+    "https://esm.sh/v96/@types/react-dom@18.0.8/index.d.ts": "c8d0754c97b7cc59294f9bbe0710499ae0755c57a72684912e07aca7df657e6b",
+    "https://esm.sh/v96/@types/react-dom@18.0.8/server~.d.ts": "954d3e8681fe59bde6377bc8136c3488eaaace7746bd13b4060f655cc111be25",
+    "https://esm.sh/v96/@types/react@18.0.21/global.d.ts": "bbdf156fea2fabed31a569445835aeedcc33643d404fcbaa54541f06c109df3f",
+    "https://esm.sh/v96/@types/react@18.0.21/index.d.ts": "c1331ac9d04748a098127f35e0f3f08f6739381dfdc5d718c2180702bcf3eb96",
+    "https://esm.sh/v96/@types/scheduler@0.16.2/tracing.d.ts": "f5a8b384f182b3851cec3596ccc96cb7464f8d3469f48c74bf2befb782a19de5",
+    "https://esm.sh/v96/csstype@3.1.1/index.d.ts": "1c29793071152b207c01ea1954e343be9a44d85234447b2b236acae9e709a383",
+    "https://esm.sh/v96/react-dom@18.2.0/deno/react-dom.js": "07e2e3627d6ac5eff07512dfb32cb31399a68f82deed40afcfb45b0313f421f9",
+    "https://esm.sh/v96/react-dom@18.2.0/deno/server.js": "bf1ce0fcb084be382713a3bbf9df8d6564cddad331ef30e9307f1c8eaa1e513d",
+    "https://esm.sh/v96/scheduler@0.23.0/deno/scheduler.js": "4c366114b6fc3cf2bdcd2f60aa4382ade0c8b62ddffcb9b64f244d92a5160b0e"
+  },
+  "npm": {
+    "specifiers": {
+      "@types/react": "@types/react@18.0.24",
+      "@types/react-dom": "@types/react-dom@18.0.8",
+      "@types/react-dom@18": "@types/react-dom@18.0.8",
+      "@types/react@18": "@types/react@18.0.24",
+      "react-dom@18": "react-dom@18.2.0",
+      "react-dom@18.2.0": "react-dom@18.2.0",
+      "react@18": "react@18.2.0",
+      "react@18.2.0": "react@18.2.0"
+    },
+    "packages": {
+      "@types/prop-types@15.7.5": {
+        "integrity": "sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==",
+        "dependencies": {}
+      },
+      "@types/react-dom@18.0.8": {
+        "integrity": "sha512-C3GYO0HLaOkk9dDAz3Dl4sbe4AKUGTCfFIZsz3n/82dPNN8Du533HzKatDxeUYWu24wJgMP1xICqkWk1YOLOIw==",
+        "dependencies": { "@types/react": "@types/react@18.0.24" }
+      },
+      "@types/react@18.0.24": {
+        "integrity": "sha512-wRJWT6ouziGUy+9uX0aW4YOJxAY0bG6/AOk5AW5QSvZqI7dk6VBIbXvcVgIw/W5Jrl24f77df98GEKTJGOLx7Q==",
+        "dependencies": {
+          "@types/prop-types": "@types/prop-types@15.7.5",
+          "@types/scheduler": "@types/scheduler@0.16.2",
+          "csstype": "csstype@3.1.1"
+        }
+      },
+      "@types/scheduler@0.16.2": {
+        "integrity": "sha512-hppQEBDmlwhFAXKJX2KnWLYu5yMfi91yazPb2l+lbJiwW+wdo1gNeRA+3RgNSO39WYX2euey41KEwnqesU2Jew==",
+        "dependencies": {}
+      },
+      "csstype@3.1.1": {
+        "integrity": "sha512-DJR/VvkAvSZW9bTouZue2sSxDwdTN92uHjqeKVm+0dAqdfNykRzQ95tay8aXMBAAPpUiq4Qcug2L7neoRh2Egw==",
+        "dependencies": {}
+      },
+      "js-tokens@4.0.0": {
+        "integrity": "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==",
+        "dependencies": {}
+      },
+      "loose-envify@1.4.0": {
+        "integrity": "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==",
+        "dependencies": { "js-tokens": "js-tokens@4.0.0" }
+      },
+      "react-dom@18.2.0": {
+        "integrity": "sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==",
+        "dependencies": {
+          "loose-envify": "loose-envify@1.4.0",
+          "scheduler": "scheduler@0.23.0"
+        }
+      },
+      "react@18.2.0": {
+        "integrity": "sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==",
+        "dependencies": { "loose-envify": "loose-envify@1.4.0" }
+      },
+      "scheduler@0.23.0": {
+        "integrity": "sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==",
+        "dependencies": { "loose-envify": "loose-envify@1.4.0" }
+      }
+    }
+  }
+}

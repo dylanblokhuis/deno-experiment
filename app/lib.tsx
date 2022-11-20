@@ -1,45 +1,84 @@
 import React from "react"
+import { ModuleTree } from "../main.tsx";
 
 export interface App {
-  scripts: string[],
-  routePath: string,
-  loaderData: any
-  actionData: any
+  moduleTree: ModuleTree,
+  files: {
+    name: string
+    input: string,
+  }[]
 }
 export const AppContext = React.createContext<App | null>(null);
 
 export function Scripts() {
   const context = React.useContext(AppContext);
+  if (!context) return <></>;
 
-  const entryModule = context?.scripts.find(script => {
-    return script.startsWith("dist/entry.client");
+  const entryModule = context?.files.find(file => {
+    return file.name.startsWith("dist/entry.client");
   });
 
+  const routes: Record<string, string> = {};
+  for (const module of context.moduleTree) {
+    context.files.forEach((item) => {
+      if (item.input === module.modulePath.replace("./", "")) {
+        routes[module.modulePath] = item.name;
+      }
+    });
+  }
+
+  const routeModules: string[] = [];
+  Object.entries(routes).forEach(([modulePath, bundle], index) => {
+    routeModules.push(`route${index}`);
+  });
+  const routeModulesJson = JSON.stringify(routeModules).replace(/\"route([0-9])\"/g, "route$1");
+
   return <>
-    {context?.scripts.map((key) => (
-      <link rel="modulepreload" key={key} href={`/${key}`} />
+    {context?.files.map((file) => (
+      <link rel="modulepreload" key={file.name} href={`/${file.name}`} />
     ))}
+
     <script dangerouslySetInnerHTML={{ __html: `window.appContext = ${JSON.stringify(context)}` }}></script>
     <script type="module" async dangerouslySetInnerHTML={{
       __html: `
-        import { hydrate } from "/${entryModule}";
-        import * as Route from "/${context?.routePath}"
+import { hydrate } from "/${entryModule?.name}";
+${Object.entries(routes).map((it, index) => `import * as route${index} from "/${it[1]}";`).join("\n")}
 
-        hydrate(Route)
+window.routeModules = ${routeModulesJson};
+
+hydrate()
         `}}>
     </script>
   </>
 }
 
+export function AppBrowser() {
+  function recursive(index: number, Module?: React.FC<{ children?: React.ReactNode }>) {
+    if (index === window.routeModules.length && Module) {
+      return <Module children={null} />;
+    }
+
+    const Current = window.routeModules[index].default;
+    if (Module?.propTypes?.children) {
+      return <Module children={<Current children={recursive(index + 1, Current)} />} />
+    }
+
+    return <Current children={recursive(index + 1, Current)} />
+  }
+
+  return <>{recursive(0)}</>;
+}
+
 export interface RouteModule {
-  default: React.FC,
+  default: React.FC<{ children?: React.ReactNode }>,
   loader?: (request: Request) => Promise<Response>,
   action?: (request: Request) => Promise<Response>,
 }
 
 export function useLoaderData<T = AppData>(): SerializeFrom<T> {
   const context = React.useContext(AppContext);
-  return context?.loaderData;
+  return null as any;
+  // return context?.loaderData;
 }
 
 // this part is created by the remix team, all credit to them https://github.com/remix-run/remix

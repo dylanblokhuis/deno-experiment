@@ -10,9 +10,7 @@ export function loader(request: Request) {
 export default function Admin() {
   const data = useLoaderData<typeof loader>();
 
-  console.log(data);
-
   return (
-    <div>Hello: {data.text}</div>
+    <div>Hello: sdfsfd</div>
   )
 }

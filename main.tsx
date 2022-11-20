@@ -8,8 +8,15 @@ import { serveDir } from "https://deno.land/std@0.165.0/http/file_server.ts";
 import * as esbuild from "https://deno.land/x/esbuild@v0.14.51/mod.js";
 import { Hono } from 'https://deno.land/x/hono@v2.5.2/mod.ts'
 import { handleRequest } from "./app/entry.server.tsx"
-import { RouteModule } from "./app/lib.tsx";
+import { App, RouteModule } from "./app/lib.tsx";
 import routes from "./routes.tsx"
+
+declare global {
+  interface Window {
+    routeModules: RouteModule[]
+    appContext: App
+  }
+}
 
 const app = new Hono()
 for (const [route, module] of routes) {
@@ -20,9 +27,9 @@ app.get("/dist/*", (c) => serveDir(c.req, {
   quiet: true
 }));
 
-async function bundle(moduleRoute: string): Promise<esbuild.Metafile> {
+async function bundle(moduleTree: ModuleTree): Promise<esbuild.Metafile> {
   const res = await esbuild.build({
-    entryPoints: ["./app/entry.client.tsx", moduleRoute],
+    entryPoints: ["./app/entry.client.tsx", ...moduleTree.map(it => it.modulePath)],
     platform: "browser",
     format: "esm",
     bundle: true,
@@ -44,37 +51,39 @@ async function bundle(moduleRoute: string): Promise<esbuild.Metafile> {
   return res.metafile;
 }
 
+export type ModuleTree = {
+  loaderData: Response | null,
+  actionData: Response | null,
+  module: React.FC<{ children?: React.ReactNode }>,
+  modulePath: string
+}[]
 
-async function handler(request: Request, modulePath: string) {
-  const module = await import(modulePath) as RouteModule;
-  let loaderData: any;
-  if (module.loader) {
-    loaderData = module.loader(request);
-  }
+async function handler(request: Request, modulePaths: string | string[]) {
+  const modulePath = Array.isArray(modulePaths) ? modulePaths : [modulePaths];
+  const moduleTree: ModuleTree = await Promise.all(modulePath.map(async (modulePath) => {
+    const module = await import(modulePath) as RouteModule;
 
-  let actionData: any;
-  if (module.action && request.method === "POST") {
-    actionData = module.action(request)
-  }
+    return {
+      loaderData: module.loader ? await module.loader(request) : null,
+      actionData: module.action && request.method === "POST" ? await module.action(request) : null,
+      module: module.default,
+      modulePath: modulePath
+    }
+  }));
 
-  const metafile = await bundle(modulePath);
-  const route = Object.entries(metafile.outputs).find(([key, value]) => {
-    return value.entryPoint?.startsWith("app/routes/");
-  });
+  const metafile = await bundle(moduleTree);
 
-  if (!route) {
-    console.error(route)
-    throw new Error("This module doesnt exist")
+  const files = Object.entries(metafile.outputs).map(([name, file]) => ({
+    name,
+    input: Object.keys(file.inputs)[0]
+  }));
+  const app: App = {
+    moduleTree,
+    files: files
   }
 
   const res = handleRequest(
-    module,
-    {
-      scripts: Object.keys(metafile.outputs),
-      routePath: route[0],
-      loaderData,
-      actionData
-    }
+    app
   )
 
   return new Response('<!DOCTYPE html>' + res, {

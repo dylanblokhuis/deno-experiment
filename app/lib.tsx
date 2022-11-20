@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any ban-types
 import React from "react"
 import { ModuleTree } from "../main.tsx";
 
@@ -9,6 +10,7 @@ export interface App {
   }[]
 }
 export const AppContext = React.createContext<App | null>(null);
+export const RouteContext = React.createContext<string | null>(null);
 
 export function Scripts() {
   const context = React.useContext(AppContext);
@@ -21,13 +23,17 @@ export function Scripts() {
   const routes: Record<string, string> = {};
   for (const module of context.moduleTree) {
     context.files.forEach((item) => {
+      // we replace ./ since esbuild removes these
       if (item.input === module.modulePath.replace("./", "")) {
         routes[module.modulePath] = item.name;
       }
     });
   }
 
-  const routeModules: string[] = Object.entries(routes).map((_, index) => `route${index}`)
+  const routeModules: Record<string, string> = {}
+  Object.entries(routes).forEach(([modulePath], index) => {
+    routeModules[modulePath] = `route${index}`;
+  })
   // instead of "route0", we want to remove the quotes so it matches the modules from the import
   const routeModulesJson = JSON.stringify(routeModules).replace(/\"route([0-9])\"/g, "route$1");
 
@@ -52,16 +58,18 @@ hydrate()
 
 export function AppBrowser() {
   function recursive(index: number, Module?: React.FC<{ children?: React.ReactNode }>) {
-    if (index === window.routeModules.length && Module) {
+    const routeModules = Object.entries(window.routeModules);
+    if (index === routeModules.length && Module) {
       return <Module children={null} />;
     }
 
-    const Current = window.routeModules[index].default;
+    const [modulePath, module] = routeModules[index];
+    const Current = module.default;
     if (Module?.propTypes?.children) {
-      return <Module children={<Current children={recursive(index + 1, Current)} />} />
+      return <Module children={<RouteContext.Provider value={modulePath}><Current children={recursive(index + 1, Current)} /></RouteContext.Provider>} />
     }
 
-    return <Current children={recursive(index + 1, Current)} />
+    return <RouteContext.Provider value={modulePath}><Current children={recursive(index + 1, Current)} /></RouteContext.Provider>
   }
 
   return recursive(0);
@@ -74,13 +82,19 @@ export interface RouteModule {
 }
 
 export function useLoaderData<T = AppData>(): SerializeFrom<T> {
-  const context = React.useContext(AppContext);
-  return null as any;
-  // return context?.loaderData;
+  const appContext = React.useContext(AppContext);
+  const modulePath = React.useContext(RouteContext);
+
+  if (!appContext || !modulePath) {
+    throw new Error("useLoaderData must be used inside a route component");
+  }
+
+  const module = appContext.moduleTree.find(item => item.modulePath === modulePath);
+  return module?.loaderData
 }
 
 // this part is created by the remix team, all credit to them https://github.com/remix-run/remix
-type AppData = any;
+export type AppData = any;
 
 type JsonPrimitive =
   | string

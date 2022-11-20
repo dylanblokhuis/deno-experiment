@@ -11,6 +11,6 @@ export default function Admin() {
   const data = useLoaderData<typeof loader>();
 
   return (
-    <div>Hello: sdfsfd</div>
+    <div>Hello: {data.text}</div>
   )
 }

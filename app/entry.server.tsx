@@ -1,6 +1,6 @@
 import React from 'react'
 import { renderToString } from "react-dom/server";
-import { App, AppContext } from './lib.tsx';
+import { App, AppContext, RouteContext } from './lib.tsx';
 import Root from './root.tsx';
 
 export function handleRequest(app: App) {
@@ -9,12 +9,17 @@ export function handleRequest(app: App) {
       return <Module children={null} />;
     }
 
-    const Current = app.moduleTree[index].module;
+    const treeNode = app.moduleTree[index];
+    const Current = treeNode.module;
     if (Module?.propTypes?.children) {
-      return <Module children={<Current children={recursive(index + 1, Current)} />} />
+      return <Module children={
+        <RouteContext.Provider value={treeNode.modulePath}>
+          <Current children={recursive(index + 1, Current)} />
+        </RouteContext.Provider>
+      } />
     }
 
-    return <Current children={recursive(index + 1, Current)} />
+    return <RouteContext.Provider value={treeNode.modulePath}><Current children={recursive(index + 1, Current)} /></RouteContext.Provider>
   }
 
   return renderToString(

@@ -8,12 +8,12 @@ import { serveDir } from "https://deno.land/std@0.165.0/http/file_server.ts";
 import * as esbuild from "https://deno.land/x/esbuild@v0.14.51/mod.js";
 import { Hono } from 'https://deno.land/x/hono@v2.5.2/mod.ts'
 import { handleRequest } from "./app/entry.server.tsx"
-import { App, RouteModule } from "./app/lib.tsx";
+import { App, AppData, RouteModule } from "./app/lib.tsx";
 import routes from "./routes.tsx"
 
 declare global {
   interface Window {
-    routeModules: RouteModule[]
+    routeModules: Record<string, RouteModule>
     appContext: App
   }
 }
@@ -52,8 +52,8 @@ async function bundle(moduleTree: ModuleTree): Promise<esbuild.Metafile> {
 }
 
 export type ModuleTree = {
-  loaderData: Response | null,
-  actionData: Response | null,
+  loaderData: AppData,
+  actionData: AppData,
   module: React.FC<{ children?: React.ReactNode }>,
   modulePath: string
 }[]

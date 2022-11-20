@@ -14,7 +14,7 @@ export function Scripts() {
   const context = React.useContext(AppContext);
   if (!context) return <></>;
 
-  const entryModule = context?.files.find(file => {
+  const entryModule = context.files.find(file => {
     return file.name.startsWith("dist/entry.client");
   });
 
@@ -27,10 +27,8 @@ export function Scripts() {
     });
   }
 
-  const routeModules: string[] = [];
-  Object.entries(routes).forEach(([modulePath, bundle], index) => {
-    routeModules.push(`route${index}`);
-  });
+  const routeModules: string[] = Object.entries(routes).map((_, index) => `route${index}`)
+  // instead of "route0", we want to remove the quotes so it matches the modules from the import
   const routeModulesJson = JSON.stringify(routeModules).replace(/\"route([0-9])\"/g, "route$1");
 
   return <>
@@ -66,7 +64,7 @@ export function AppBrowser() {
     return <Current children={recursive(index + 1, Current)} />
   }
 
-  return <>{recursive(0)}</>;
+  return recursive(0);
 }
 
 export interface RouteModule {

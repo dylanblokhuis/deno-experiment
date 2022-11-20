@@ -72,19 +72,16 @@ async function handler(request: Request, modulePaths: string | string[]) {
   }));
 
   const metafile = await bundle(moduleTree);
+  const files = Object.entries(metafile.outputs)
+    .map(([name, file]) => ({
+      name,
+      input: Object.keys(file.inputs)[0]
+    }));
 
-  const files = Object.entries(metafile.outputs).map(([name, file]) => ({
-    name,
-    input: Object.keys(file.inputs)[0]
-  }));
-  const app: App = {
+  const res = handleRequest({
     moduleTree,
-    files: files
-  }
-
-  const res = handleRequest(
-    app
-  )
+    files
+  })
 
   return new Response('<!DOCTYPE html>' + res, {
     headers: {

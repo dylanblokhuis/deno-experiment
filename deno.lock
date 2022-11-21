@@ -124,13 +124,29 @@
     "https://esm.sh/v99/@types/react@18.0.25/global.d.ts": "bbdf156fea2fabed31a569445835aeedcc33643d404fcbaa54541f06c109df3f",
     "https://esm.sh/v99/@types/react@18.0.25/index.d.ts": "12154bc47748a901d10aa84dc39d0ec3a5f2d50624a7f018b473ef5af23063b4",
     "https://esm.sh/v99/@types/scheduler@0.16.2/tracing.d.ts": "f5a8b384f182b3851cec3596ccc96cb7464f8d3469f48c74bf2befb782a19de5",
-    "https://esm.sh/v99/csstype@3.1.1/index.d.ts": "1c29793071152b207c01ea1954e343be9a44d85234447b2b236acae9e709a383"
+    "https://esm.sh/v99/csstype@3.1.1/index.d.ts": "1c29793071152b207c01ea1954e343be9a44d85234447b2b236acae9e709a383",
+    "https://esm.sh/v99/zod@3.19.1/deno/zod.js": "96dffd86a9b994ed72dafd80c0f7917a8649893037d44e8c142bf2538ae76d5f",
+    "https://esm.sh/v99/zod@3.19.1/index.d.ts": "b51c954b9557b1dcb03b2bf34cd136e710cb9aa276e686cac0e291249590a52a",
+    "https://esm.sh/v99/zod@3.19.1/lib/ZodError.d.ts": "658f8a24b16c4bb348bee9ebf7be0d3a7f72514fd52c7f79ef225183152a80a8",
+    "https://esm.sh/v99/zod@3.19.1/lib/errors.d.ts": "5ec2790f877581637c058eb5bbb72e855a078620d0781d2a6a8f308fe1d5436f",
+    "https://esm.sh/v99/zod@3.19.1/lib/external.d.ts": "9aecb271407202ee5e93fdac5a6edf5f4e036f57e542836b64fdeae57975dd84",
+    "https://esm.sh/v99/zod@3.19.1/lib/helpers/enumUtil.d.ts": "f672c876c1a04a223cf2023b3d91e8a52bb1544c576b81bf64a8fec82be9969c",
+    "https://esm.sh/v99/zod@3.19.1/lib/helpers/errorUtil.d.ts": "014b34d4c2ef27191fdf3feabb6557ec92127f813910725b6e79ed9a49e466b6",
+    "https://esm.sh/v99/zod@3.19.1/lib/helpers/parseUtil.d.ts": "d3dbfc2f2fbf2c1bdea72db72f9f5c95d2ca5b4d32c9e229764ebaba0920203c",
+    "https://esm.sh/v99/zod@3.19.1/lib/helpers/partialUtil.d.ts": "7da6f1e431746c5364ebe6703f5d3a844ab0495e2a8cedc0a29cced52d6284a1",
+    "https://esm.sh/v99/zod@3.19.1/lib/helpers/typeAliases.d.ts": "9afae14803f3b7343ed6d193173008715c1fa3421a353a818c805244ed737a84",
+    "https://esm.sh/v99/zod@3.19.1/lib/helpers/util.d.ts": "bb98c05ae5cb9bd7cb7ad76fe517251a661787a6f24337b842f47faf393f79c7",
+    "https://esm.sh/v99/zod@3.19.1/lib/index.d.ts": "0f86f053aecd06054359e146b6cd800fee9bf82905f8afb47f1fe774fd37311e",
+    "https://esm.sh/v99/zod@3.19.1/lib/locales/en.d.ts": "f8ec1611afb8d132c6c71822718805866890cf2071025153af97508eff24e4b6",
+    "https://esm.sh/v99/zod@3.19.1/lib/types.d.ts": "6c3d5c3902436de0bf51db9b31287e175dfb2afd083c5dffb30fab0e78ff6ffa",
+    "https://esm.sh/zod@3.19.1": "ea1a3cf5dea6102a1829982282397a33d0f84766c6e5eb8b7d5730e02200c618"
   },
   "npm": {
     "specifiers": {
       "@trpc/server@10.0.0": "@trpc/server@10.0.0",
       "react-dom@18": "react-dom@18.2.0",
-      "react@18": "react@18.2.0"
+      "react@18": "react@18.2.0",
+      "zod@3.19.1": "zod@3.19.1"
     },
     "packages": {
       "@trpc/server@10.0.0": {
@@ -159,6 +175,10 @@
       "scheduler@0.23.0": {
         "integrity": "sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==",
         "dependencies": { "loose-envify": "loose-envify@1.4.0" }
+      },
+      "zod@3.19.1": {
+        "integrity": "sha512-LYjZsEDhCdYET9ikFu6dVPGp2YH9DegXjdJToSzD9rO6fy4qiRYFoyEYwps88OseJlPyl2NOe2iJuhEhL7IpEA==",
+        "dependencies": {}
       }
     }
   }

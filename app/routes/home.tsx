@@ -4,7 +4,9 @@ import { Context } from '../lib.tsx'
 
 export async function loader(context: Context) {
   const caller = appRouter.createCaller({});
-  const result = await caller.greeting();
+  const result = await caller.greeting({
+    text: "Hello World",
+  });
 
   console.log(result);
 

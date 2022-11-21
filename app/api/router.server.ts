@@ -1,10 +1,14 @@
-import * as trpc from '@trpc/server';
 import { publicProcedure, router } from './trpc.ts';
+import { z } from "zod"
 
 export const appRouter = router({
-  greeting: publicProcedure.query(() => 'hello tRPC v10!'),
+  greeting: publicProcedure
+    .input(
+      z
+        .object({
+          text: z.string(),
+        })
+    ).query((input) => `hello tRPC v10! ${input.input.text}`),
 });
 
-// Export only the type of a router!
-// This prevents us from importing server code on the client.
 export type AppRouter = typeof appRouter;

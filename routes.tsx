@@ -1,8 +1,5 @@
+import type { Route } from './app/lib.tsx'
 import { isAuthorised } from './app/api/middleware.ts'
-import { MiddlewareHandler } from './app/lib.tsx'
-type Middleware = MiddlewareHandler | MiddlewareHandler[]
-type Module = string | string[]
-type Route = [string, Module] | [string, Middleware, Module]
 
 const routes: Route[] = [
   ["/", "./app/routes/home.tsx"],

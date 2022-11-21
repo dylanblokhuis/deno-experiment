@@ -2,7 +2,7 @@
 import React from "react"
 export type { Context, MiddlewareHandler } from "hono"
 import { ModuleTree } from "../main.tsx";
-import type { Context } from "hono";
+import type { Context, MiddlewareHandler } from "hono";
 
 export interface App {
   moduleTree: ModuleTree,
@@ -170,3 +170,8 @@ export type SerializeFrom<T extends AppData | ArbitraryFunction> = Serialize<
   : Awaited<Output>
   : Awaited<T>
 >;
+
+// routing
+type Middleware = MiddlewareHandler | MiddlewareHandler[]
+type Module = string | string[]
+export type Route = [string, Module] | [string, Middleware, Module]

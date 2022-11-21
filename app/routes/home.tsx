@@ -1,4 +1,15 @@
 import React, { useState } from 'react'
+import { appRouter } from '../api/router.server.ts'
+import { Context } from '../lib.tsx'
+
+export async function loader(context: Context) {
+  const caller = appRouter.createCaller({});
+  const result = await caller.greeting();
+
+  console.log(result);
+
+  return {}
+}
 
 export default function Home() {
   const [count, setCount] = useState(0)

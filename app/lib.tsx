@@ -25,8 +25,7 @@ export function Scripts() {
   const routes: Record<string, string> = {};
   for (const module of context.moduleTree) {
     context.files.forEach((item) => {
-      // we replace ./ since esbuild removes these
-      if (item.input === module.modulePath.replace("./", "")) {
+      if (item.input.replace(/^(.*):/, "") === `${module.modulePath}?browser`) {
         routes[module.modulePath] = item.name;
       }
     });

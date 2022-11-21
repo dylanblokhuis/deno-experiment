@@ -6,7 +6,7 @@ import "npm:react-dom@18"
 import { serve } from "https://deno.land/std@0.165.0/http/server.ts";
 import { serveDir } from "https://deno.land/std@0.165.0/http/file_server.ts";
 import * as esbuild from "https://deno.land/x/esbuild@v0.14.51/mod.js";
-import { Hono } from 'https://deno.land/x/hono@v2.5.2/mod.ts'
+import { Context, Hono } from 'hono'
 import { handleRequest } from "./app/entry.server.tsx"
 import { App, AppData, RouteModule } from "./app/lib.tsx";
 import routes from "./routes.tsx"
@@ -19,9 +19,20 @@ declare global {
 }
 
 const app = new Hono()
-for (const [route, module] of routes) {
-  app.get(route, (c) => handler(c.req, module)).post(route, (c) => handler(c.req, module));
+for (const entry of routes) {
+  if (entry.length === 2) {
+    const [route, module] = entry;
+    app.get(route, (c) => handler(c, module)).post(route, (c) => handler(c, module));
+  }
+  if (entry.length === 3) {
+    const [route, middleware, module] = entry;
+    for (const mw of Array.isArray(middleware) ? middleware : [middleware]) {
+      app.use(route, mw);
+    }
+    app.get(route, (c) => handler(c, module)).post(route, (c) => handler(c, module));
+  }
 }
+
 app.get("/dist/*", (c) => serveDir(c.req, {
   fsRoot: ".",
   quiet: true
@@ -58,14 +69,14 @@ export type ModuleTree = {
   modulePath: string
 }[]
 
-async function handler(request: Request, modulePaths: string | string[]) {
+async function handler(ctx: Context, modulePaths: string | string[]) {
   const modulePath = Array.isArray(modulePaths) ? modulePaths : [modulePaths];
   const moduleTree: ModuleTree = await Promise.all(modulePath.map(async (modulePath) => {
     const module = await import(modulePath) as RouteModule;
 
     return {
-      loaderData: module.loader ? await module.loader(request) : null,
-      actionData: module.action && request.method === "POST" ? await module.action(request) : null,
+      loaderData: module.loader ? await module.loader(ctx) : null,
+      actionData: module.action && ctx.req.method === "POST" ? await module.action(ctx) : null,
       module: module.default,
       modulePath: modulePath
     }
@@ -83,11 +94,7 @@ async function handler(request: Request, modulePaths: string | string[]) {
     files
   })
 
-  return new Response('<!DOCTYPE html>' + res, {
-    headers: {
-      "content-type": "text/html",
-    }
-  });
+  return ctx.html('<!DOCTYPE html>' + res);
 }
 
 await serve(app.fetch, { port: 3000 });

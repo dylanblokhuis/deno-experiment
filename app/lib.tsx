@@ -1,6 +1,8 @@
 // deno-lint-ignore-file no-explicit-any ban-types
 import React from "react"
+export type { Context, MiddlewareHandler } from "hono"
 import { ModuleTree } from "../main.tsx";
+import type { Context } from "hono";
 
 export interface App {
   moduleTree: ModuleTree,
@@ -77,8 +79,8 @@ export function AppBrowser() {
 
 export interface RouteModule {
   default: React.FC<{ children?: React.ReactNode }>,
-  loader?: (request: Request) => Promise<Response>,
-  action?: (request: Request) => Promise<Response>,
+  loader?: (ctx: Context) => Promise<Response>,
+  action?: (ctx: Context) => Promise<Response>,
 }
 
 export function useLoaderData<T = AppData>(): SerializeFrom<T> {

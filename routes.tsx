@@ -1,9 +1,13 @@
-type Module = [string, string | string[]]
+import { isAuthorised } from './app/api/middleware.ts'
+import { MiddlewareHandler } from './app/lib.tsx'
+type Middleware = MiddlewareHandler | MiddlewareHandler[]
+type Module = string | string[]
+type Route = [string, Module] | [string, Middleware, Module]
 
-const modules: Module[] = [
+const routes: Route[] = [
   ["/", "./app/routes/home.tsx"],
-  ["/admin", ["./app/layout/admin.tsx", "./app/routes/admin.tsx"]],
+  ["/admin", isAuthorised, ["./app/layout/admin.tsx", "./app/routes/admin.tsx"]],
   ["/admin/*", "./app/routes/admin.tsx"],
 ]
 
-export default modules;
+export default routes;

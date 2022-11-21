@@ -1,7 +1,7 @@
 import React from 'react'
-import { useLoaderData } from '../lib.tsx';
+import { Context, useLoaderData } from '../lib.tsx';
 
-export function loader(request: Request) {
+export function loader(ctx: Context) {
   return {
     text: "im a layout!"
   }

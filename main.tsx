@@ -1,5 +1,5 @@
 // this is just so a node_modules folder gets created with react in it
-// why? because deno is weird with @types 
+// why? https://github.com/denoland/deno/issues/16653
 import "npm:react@18"
 import "npm:react-dom@18"
 

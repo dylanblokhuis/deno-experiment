@@ -3,6 +3,7 @@ import React from "react"
 export type { Context, MiddlewareHandler } from "hono"
 import { ModuleTree } from "../main.tsx";
 import type { Context, MiddlewareHandler } from "hono";
+import config from "../config.ts"
 
 export interface App {
   moduleTree: ModuleTree,
@@ -174,3 +175,63 @@ export type SerializeFrom<T extends AppData | ArbitraryFunction> = Serialize<
 type Middleware = MiddlewareHandler | MiddlewareHandler[]
 type Module = string | string[]
 export type Route = [string, Module] | [string, Middleware, Module]
+
+export interface Config {
+  mode: "development" | "production",
+  livereloadWsPort: number,
+}
+
+export const LiveReload =
+  config.mode !== "development"
+    ? () => null
+    : function LiveReload({
+      port = Number(config.livereloadWsPort || 8002),
+      nonce = undefined,
+    }: {
+      port?: number;
+      /**
+       * @deprecated this property is no longer relevant.
+       */
+      nonce?: string;
+    }) {
+      let js = String.raw;
+      return (
+        <script
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: js`
+                function liveReloadConnect(config) {
+                  let protocol = location.protocol === "https:" ? "wss:" : "ws:";
+                  let host = location.hostname;
+                  let socketPath = protocol + "//" + host + ":" + ${String(
+              port
+            )} + "/socket";
+                  let ws = new WebSocket(socketPath);
+                 
+                  ws.onopen = () => {
+                    if (config && typeof config.onOpen === "function") {
+                      config.onOpen();
+                    }
+                  };
+                  ws.onclose = (error) => {
+                    console.log("Livereload socket closed. Reconnecting...");
+                    setTimeout(
+                      () =>
+                        liveReloadConnect({
+                          onOpen: () => window.location.reload(),
+                        }),
+                      500
+                    );
+                  };
+                  ws.onerror = (error) => {
+                    console.log("Socket error:");
+                    console.error(error);
+                  };
+                }
+                liveReloadConnect();
+              `,
+          }}
+        />
+      );
+    };

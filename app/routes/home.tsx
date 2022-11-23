@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { appRouter } from '../api/router.server.ts'
-import { Context } from '../lib.tsx'
+import { Context, useLoaderData } from '../lib.tsx'
 
 export async function loader(context: Context) {
   const caller = appRouter.createCaller({});
@@ -8,20 +8,20 @@ export async function loader(context: Context) {
     text: "Hello World",
   });
 
-  console.log(result);
-
-  return {}
+  return result
 }
 
 export default function Home() {
+  const data = useLoaderData<typeof loader>();
   const [count, setCount] = useState(0)
+
   return (
     <div>
-      Home
+      Home: {data}
 
       <button onClick={() => setCount(count + 1)}>Count: {count}</button>
 
-      <a className='bg-blue-600' href='/admin'>Admin</a>
+      <a className='bg-red-600' href='/admin'>Admin</a>
     </div>
   )
 }

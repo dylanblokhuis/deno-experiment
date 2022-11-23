@@ -1,5 +1,5 @@
 import React from 'react'
-import { Scripts } from './lib.tsx';
+import { LiveReload, Scripts } from './lib.tsx';
 
 export default function Root({ children }: { children: React.ReactNode }) {
   return (
@@ -11,6 +11,7 @@ export default function Root({ children }: { children: React.ReactNode }) {
       <body>
         {children}
         <Scripts />
+        <LiveReload />
       </body>
     </html>
   )

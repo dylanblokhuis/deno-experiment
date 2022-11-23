@@ -3,6 +3,7 @@
 import type { } from "npm:react@18"
 import type { } from "npm:react-dom@18"
 
+import config from "./config.ts";
 import { serve } from "https://deno.land/std@0.165.0/http/server.ts";
 import { serveDir, serveFile } from "https://deno.land/std@0.165.0/http/file_server.ts";
 import * as esbuild from "https://deno.land/x/esbuild@v0.14.51/mod.js";
@@ -20,6 +21,7 @@ declare global {
     appContext: App
   }
 }
+
 
 const app = new Hono()
 
@@ -71,7 +73,7 @@ app.get("/tailwind.css", async (c) => {
 
 app.get("/dist/*", (c) => serveDir(c.req, {
   fsRoot: ".",
-  quiet: true
+  quiet: true,
 }));
 
 async function bundle(moduleTree: ModuleTree): Promise<esbuild.Metafile> {
@@ -162,7 +164,7 @@ async function bundle(moduleTree: ModuleTree): Promise<esbuild.Metafile> {
     bundle: true,
     splitting: true,
     outdir: "dist",
-    minify: false,
+    minify: config.mode === "production",
     treeShaking: true,
     entryNames: "[dir]/[name]-[hash]",
     chunkNames: "_shared/[name]-[hash]",
@@ -215,4 +217,22 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
   return ctx.html('<!DOCTYPE html>' + res);
 }
 
-await serve(app.fetch, { port: 3000 });
+await Promise.all([
+  serve(app.fetch, { port: 3000 }),
+  config.mode === "development" && serve(function (req: Request) {
+    const upgrade = req.headers.get("upgrade") || "";
+    if (upgrade.toLowerCase() != "websocket") {
+      return new Response("request isn't trying to upgrade to websocket.");
+    }
+    const { response } = Deno.upgradeWebSocket(req);
+    // socket.onopen = () => console.log("socket opened");
+    // socket.onmessage = (e) => {
+    //   console.log("socket message:", e.data);
+    //   socket.send(new Date().toString());
+    // };
+    // socket.onerror = (e) => console.log("socket errored:", e);
+    // socket.onclose = () => console.log("socket closed");
+
+    return response;
+  }, { port: config.livereloadWsPort || 8002 })
+]);

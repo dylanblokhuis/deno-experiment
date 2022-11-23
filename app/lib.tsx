@@ -1,16 +1,22 @@
 // deno-lint-ignore-file no-explicit-any ban-types
 import React from "react"
-export type { Context, MiddlewareHandler } from "hono"
 import { ModuleTree } from "../main.tsx";
-import type { Context, MiddlewareHandler } from "hono";
+import type { Context as HonoContext, MiddlewareHandler as HonoMiddlewareHandler } from "hono";
 import config from "../config.ts"
 
+type ContextVariables = {
+  bodyClasses: string[]
+}
+export type ContextEnvironment = { Variables: ContextVariables }
+export type Context = HonoContext<"", ContextEnvironment>
+export type MiddlewareHandler = HonoMiddlewareHandler<"", ContextEnvironment>
 export interface App {
   moduleTree: ModuleTree,
   files: {
     name: string
     input: string,
   }[]
+  variables: ContextVariables
 }
 export const AppContext = React.createContext<App | null>(null);
 export const RouteContext = React.createContext<string | null>(null);
@@ -192,7 +198,6 @@ export const LiveReload =
       const js = String.raw;
       return (
         <script
-          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: js`
                 function liveReloadConnect(config) {
@@ -229,3 +234,9 @@ export const LiveReload =
         />
       );
     };
+
+export function useApp(): App {
+  const context = React.useContext(AppContext);
+  if (!context) throw new Error("useApp used outside of AppContext")
+  return context
+}

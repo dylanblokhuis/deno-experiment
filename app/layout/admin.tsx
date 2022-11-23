@@ -1,19 +1,20 @@
 import React from 'react'
-import { Context, useLoaderData } from '../lib.tsx';
+import { Context } from '../lib.tsx'
 
-export function loader(ctx: Context) {
-  return {
-    text: "im a layout!"
-  }
+export function loader(context: Context) {
+  context.set("bodyClasses", [...context.get("bodyClasses"), "admin"]);
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const data = useLoaderData<typeof loader>();
-
   return (
-    <div>
-      Layout: {data.text}
-      {children}
+    <div className='flex bg-slate-100 w-full h-full'>
+      <aside className='bg-slate-900 text-white flex-none w-64 p-4'>
+        Home
+      </aside>
+
+      <main className='w-full'>
+        {children}
+      </main>
     </div>
   )
 }

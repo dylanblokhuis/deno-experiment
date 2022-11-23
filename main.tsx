@@ -8,9 +8,9 @@ import { serve } from "https://deno.land/std@0.165.0/http/server.ts";
 import { serveDir, serveFile } from "https://deno.land/std@0.165.0/http/file_server.ts";
 import * as esbuild from "https://deno.land/x/esbuild@v0.14.51/mod.js";
 import * as path from "https://deno.land/std@0.165.0/path/mod.ts";
-import { Context, Hono } from 'hono'
+import { Hono } from 'hono'
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch"
-import { App, AppData, RouteModule } from "./app/lib.tsx";
+import { App, AppData, RouteModule, Context, ContextEnvironment } from "./app/lib.tsx";
 import { appRouter } from "./app/api/router.server.ts";
 import { handleRequest } from "./app/entry.server.tsx"
 import routes from "./routes.tsx"
@@ -22,8 +22,7 @@ declare global {
   }
 }
 
-
-const app = new Hono()
+const app = new Hono<ContextEnvironment>()
 
 for (const entry of routes) {
   if (entry.length === 2) {
@@ -107,7 +106,7 @@ async function bundle(moduleTree: ModuleTree): Promise<esbuild.Metafile> {
   ): esbuild.Plugin {
     return {
       name: "browser-route-modules",
-      async setup(build) {
+      setup(build) {
         build.onResolve({ filter: suffixMatcher }, (args) => {
           return {
             path: args.path,
@@ -129,7 +128,7 @@ async function bundle(moduleTree: ModuleTree): Promise<esbuild.Metafile> {
             try {
               if (!module) throw new Error("No module found");
               theExports = module?.exports.filter(ex => !!browserSafeRouteExports[ex]);
-            } catch (error: any) {
+            } catch (error) {
               return {
                 errors: [
                   {
@@ -142,7 +141,7 @@ async function bundle(moduleTree: ModuleTree): Promise<esbuild.Metafile> {
 
             let contents = "module.exports = {};";
             if (theExports.length !== 0) {
-              let spec = `{ ${theExports.join(", ")} }`;
+              const spec = `{ ${theExports.join(", ")} }`;
               contents = `export ${spec} from ${JSON.stringify(file)};`;
             }
 
@@ -190,9 +189,16 @@ export type ModuleTree = {
 }[]
 
 async function handler(ctx: Context, modulePaths: string | string[]) {
+  const contextVariables: ContextEnvironment["Variables"] = {
+    bodyClasses: [],
+  }
+  // @ts-expect-error - setting the default values to conform the interface
+  ctx._map = contextVariables;
+
   const modulePath = Array.isArray(modulePaths) ? modulePaths : [modulePaths];
   const moduleTree: ModuleTree = await Promise.all(modulePath.map(async (modulePath) => {
     const module = await import(modulePath) as RouteModule;
+    ctx.env
     return {
       loaderData: module.loader ? await module.loader(ctx) : null,
       actionData: module.action && ctx.req.method === "POST" ? await module.action(ctx) : null,
@@ -211,7 +217,9 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
 
   const res = handleRequest({
     moduleTree,
-    files
+    files,
+    // @ts-expect-error - use the map, otherwise it would require using .getters 50x times.
+    variables: ctx._map
   })
 
   return ctx.html('<!DOCTYPE html>' + res);

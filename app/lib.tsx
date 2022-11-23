@@ -186,18 +186,12 @@ export const LiveReload =
     ? () => null
     : function LiveReload({
       port = Number(config.livereloadWsPort || 8002),
-      nonce = undefined,
     }: {
       port?: number;
-      /**
-       * @deprecated this property is no longer relevant.
-       */
-      nonce?: string;
     }) {
-      let js = String.raw;
+      const js = String.raw;
       return (
         <script
-          nonce={nonce}
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: js`

@@ -21,7 +21,7 @@ export default function Home() {
 
       <button onClick={() => setCount(count + 1)}>Count: {count}</button>
 
-      <a href='/admin'>Admin</a>
+      <a className='bg-blue-600' href='/admin'>Admin</a>
     </div>
   )
 }

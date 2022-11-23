@@ -28,5 +28,5 @@ export function handleRequest(app: App) {
         {recursive(0)}
       </Root>
     </AppContext.Provider>
-  );
+  ) as string;
 }

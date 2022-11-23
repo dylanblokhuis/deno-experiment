@@ -1,18 +1,18 @@
 // this is just so a node_modules folder gets created with react in it
 // why? https://github.com/denoland/deno/issues/16653
-import "npm:react@18"
-import "npm:react-dom@18"
+import type { } from "npm:react@18"
+import type { } from "npm:react-dom@18"
 
 import { serve } from "https://deno.land/std@0.165.0/http/server.ts";
-import { serveDir } from "https://deno.land/std@0.165.0/http/file_server.ts";
+import { serveDir, serveFile } from "https://deno.land/std@0.165.0/http/file_server.ts";
 import * as esbuild from "https://deno.land/x/esbuild@v0.14.51/mod.js";
 import * as path from "https://deno.land/std@0.165.0/path/mod.ts";
 import { Context, Hono } from 'hono'
-import { handleRequest } from "./app/entry.server.tsx"
-import { App, AppData, RouteModule } from "./app/lib.tsx";
-import routes from "./routes.tsx"
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch"
+import { App, AppData, RouteModule } from "./app/lib.tsx";
 import { appRouter } from "./app/api/router.server.ts";
+import { handleRequest } from "./app/entry.server.tsx"
+import routes from "./routes.tsx"
 
 declare global {
   interface Window {
@@ -43,6 +43,30 @@ app.get("/trpc", (c) => {
     req: c.req,
     router: appRouter
   })
+})
+
+/**
+ * Until tailwindcss gets supported by Deno this is a workaround
+ */
+let lastMtime: Date | null;
+app.get("/tailwind.css", async (c) => {
+  const stat = await Deno.stat("./dist");
+
+  if (stat.mtime?.getTime() !== lastMtime?.getTime()) {
+    try {
+      const p = Deno.run({
+        cmd: ["tailwindcss", "-i", "./app/global.css", "--content", "./app/**/*.tsx", "-o", "./dist/tailwind.css"],
+        stdout: "null",
+        stderr: "null"
+      });
+      await p.status();
+      lastMtime = stat.mtime;
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  return serveFile(c.req, "./dist/tailwind.css");
 })
 
 app.get("/dist/*", (c) => serveDir(c.req, {
@@ -167,7 +191,6 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
   const modulePath = Array.isArray(modulePaths) ? modulePaths : [modulePaths];
   const moduleTree: ModuleTree = await Promise.all(modulePath.map(async (modulePath) => {
     const module = await import(modulePath) as RouteModule;
-
     return {
       loaderData: module.loader ? await module.loader(ctx) : null,
       actionData: module.action && ctx.req.method === "POST" ? await module.action(ctx) : null,
@@ -178,9 +201,6 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
   }));
 
   const metafile = await bundle(moduleTree);
-  // console.log(metafile);
-
-
   const files = Object.entries(metafile.outputs)
     .map(([name, file]) => ({
       name,

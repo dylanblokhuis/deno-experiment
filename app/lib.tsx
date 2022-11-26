@@ -3,9 +3,11 @@ import React from "react"
 import { ModuleTree } from "../main.tsx";
 import type { Context as HonoContext, MiddlewareHandler as HonoMiddlewareHandler } from "hono";
 import config from "../config.ts"
+import type { Admin } from "./layout/admin.tsx";
 
 type ContextVariables = {
-  bodyClasses: string[]
+  bodyClasses: string[],
+  admin: Admin
 }
 export type ContextEnvironment = { Variables: ContextVariables }
 export type Context = HonoContext<"", ContextEnvironment>

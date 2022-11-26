@@ -8,7 +8,7 @@ export default function Root({ children }: { children: React.ReactNode }) {
     <html>
       <head>
         <title>Hey</title>
-        <link rel="stylesheet" href="tailwind.css" />
+        <link rel="stylesheet" href="/tailwind.css" />
       </head>
       <body className={app.variables.bodyClasses.join(" ")}>
         {children}

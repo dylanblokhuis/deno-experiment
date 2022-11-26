@@ -8,6 +8,7 @@
     "@trpc/server": "npm:@trpc/server@10.0.0",
     "@trpc/server/adapters/fetch": "npm:@trpc/server@10.0.0/adapters/fetch",
     "@trpc/client": "npm:@trpc/client@10.0.0",
-    "zod": "https://esm.sh/zod@3.19.1"
+    "zod": "https://esm.sh/zod@3.19.1",
+    "kysely": "npm:kysely"
   }
 }

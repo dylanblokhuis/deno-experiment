@@ -14,6 +14,8 @@ import { App, AppData, RouteModule, Context, ContextEnvironment } from "./app/li
 import { appRouter } from "./app/api/router.server.ts";
 import { handleRequest } from "./app/entry.server.tsx"
 import routes from "./routes.tsx"
+import { Admin } from "./app/layout/admin.tsx";
+import { migrate } from "./app/db/db.server.ts";
 
 declare global {
   interface Window {
@@ -191,6 +193,7 @@ export type ModuleTree = {
 async function handler(ctx: Context, modulePaths: string | string[]) {
   const contextVariables: ContextEnvironment["Variables"] = {
     bodyClasses: [],
+    admin: new Admin()
   }
   // @ts-expect-error - setting the default values to conform the interface
   ctx._map = contextVariables;
@@ -224,6 +227,8 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
 
   return ctx.html('<!DOCTYPE html>' + res);
 }
+
+await migrate();
 
 await Promise.all([
   serve(app.fetch, { port: 3000 }),

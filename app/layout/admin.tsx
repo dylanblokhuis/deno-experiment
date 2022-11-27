@@ -26,10 +26,10 @@ export async function loader(context: Context) {
     pathname: "/admin/posts",
     name: "Posts"
   })
-
-  await db.insertInto("post").values({
-    title: "Hello",
-  }).execute();
+  admin.addMenuItem({
+    pathname: "/admin/field-groups",
+    name: "Field Groups"
+  })
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {

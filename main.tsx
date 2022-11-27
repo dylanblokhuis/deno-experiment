@@ -17,12 +17,12 @@ import routes from "./routes.tsx"
 import { Admin } from "./app/layout/admin.tsx";
 import { migrate } from "./app/db/db.server.ts";
 
-declare global {
-  interface Window {
-    routeModules: Record<string, RouteModule>
-    appContext: App
-  }
-}
+// declare global {
+//   interface Window {
+//     routeModules: Record<string, RouteModule>
+//     appContext: App
+//   }
+// }
 
 const app = new Hono<ContextEnvironment>()
 

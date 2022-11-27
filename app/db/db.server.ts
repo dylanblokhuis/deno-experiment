@@ -5,14 +5,47 @@ import * as path from "https://deno.land/std@0.166.0/path/mod.ts";
 
 const sqlite = new SqliteDatabase("app.db");
 
-interface Post {
+interface PostTable {
   id: Generated<number>;
   title: string;
   created_at: ColumnType<Date, string | undefined, never>
 }
 
-interface Database {
-  post: Post
+interface FieldGroupTable {
+  id: Generated<number>;
+  name: string;
+  created_at: ColumnType<Date, string | undefined, never>
+}
+
+interface FieldTypeTable {
+  id: Generated<number>;
+  name: string;
+}
+
+export interface FieldTable {
+  id: Generated<number>;
+  name: string;
+  slug: string;
+  type_id: number;
+  field_group_id: number;
+  created_at: ColumnType<Date, string | undefined, never>
+}
+
+interface PostFieldTable {
+  id: Generated<number>;
+  post_id: number;
+  field_id: number;
+  value: string;
+  created_at: ColumnType<Date, string | undefined, never>
+  updated_at: ColumnType<Date, string | undefined, never>
+}
+
+export interface Database {
+  post: PostTable,
+  field_group: FieldGroupTable,
+  field_type: FieldTypeTable,
+  field: FieldTable,
+  post_field: PostFieldTable
 }
 
 const db = new Kysely<Database>({

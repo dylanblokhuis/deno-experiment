@@ -10,7 +10,6 @@
     "@trpc/client": "npm:@trpc/client@10.0.0",
     "zod": "npm:zod@3.19.1",
     "kysely": "npm:kysely",
-    "clsx": "npm:clsx",
-    "validated-form": "npm:remix-validated-form@"
+    "clsx": "npm:clsx"
   }
 }

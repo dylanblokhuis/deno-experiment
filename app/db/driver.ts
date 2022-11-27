@@ -95,12 +95,12 @@ class SqliteConnection implements DatabaseConnection {
           rows: stmt.all(parameters as any[]) as O[],
         })
       } else {
-        stmt.run(parameters as any)
+        const rows = stmt.all(parameters as any) as O[]
 
         return Promise.resolve({
           numUpdatedOrDeletedRows: undefined,
           insertId: undefined,
-          rows: [],
+          rows: rows,
         })
       }
     } catch (error) {

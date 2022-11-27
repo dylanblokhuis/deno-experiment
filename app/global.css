@@ -9,3 +9,7 @@ html {
 body.admin {
   @apply w-full h-full;
 }
+
+body.admin input[type=text] {
+    @apply border rounded px-2 py-1;
+}

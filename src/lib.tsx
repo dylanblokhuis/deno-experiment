@@ -1,9 +1,9 @@
 // deno-lint-ignore-file no-explicit-any ban-types
 import React from "react"
-import { ModuleTree } from "../main.tsx";
+import { ModuleTree } from "./main.tsx";
 import type { Context as HonoContext, MiddlewareHandler as HonoMiddlewareHandler } from "hono";
-import config from "../config.ts"
-import type { Admin } from "./layout/admin.tsx";
+import config from "./config.ts"
+import type { Admin } from "./admin/layout/admin.tsx";
 
 type ContextVariables = {
   bodyClasses: string[],
@@ -26,6 +26,7 @@ export const RouteContext = React.createContext<string | null>(null);
 export function Scripts() {
   const context = React.useContext(AppContext);
   if (!context) return <></>;
+
 
   const entryModule = context.files.find(file => {
     return file.name.startsWith("dist/entry.client");

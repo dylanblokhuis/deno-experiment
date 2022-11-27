@@ -1,6 +1,5 @@
 import React from 'react'
-import db from '../db/db.server.ts'
-import { Context, useApp } from '../lib.tsx'
+import { Context, useApp } from '$lib'
 
 interface MenuItem {
   pathname: string

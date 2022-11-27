@@ -1,6 +1,6 @@
 import React from 'react'
-import db from '../../db/db.server.ts'
-import { Context, useLoaderData } from '../../lib.tsx'
+import db from '$db'
+import { Context, useLoaderData } from '$lib'
 
 export async function loader(ctx: Context) {
   const posts = await db.selectFrom("post").selectAll().execute();

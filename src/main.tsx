@@ -10,19 +10,19 @@ import * as esbuild from "https://deno.land/x/esbuild@v0.14.51/mod.js";
 import * as path from "https://deno.land/std@0.165.0/path/mod.ts";
 import { Hono } from 'hono'
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch"
-import { App, AppData, RouteModule, Context, ContextEnvironment } from "./app/lib.tsx";
-import { appRouter } from "./app/api/router.server.ts";
-import { handleRequest } from "./app/entry.server.tsx"
+import { App, AppData, RouteModule, Context, ContextEnvironment } from "./lib.tsx";
+import { appRouter } from "./api/router.server.ts";
+import { handleRequest } from "./entry.server.tsx"
 import routes from "./routes.tsx"
-import { Admin } from "./app/layout/admin.tsx";
-import { migrate } from "./app/db/db.server.ts";
+import { Admin } from "./admin/layout/admin.tsx";
+import { migrate } from "$db";
 
-// declare global {
-//   interface Window {
-//     routeModules: Record<string, RouteModule>
-//     appContext: App
-//   }
-// }
+declare global {
+  interface Window {
+    routeModules: Record<string, RouteModule>
+    appContext: App
+  }
+}
 
 const app = new Hono<ContextEnvironment>()
 
@@ -53,20 +53,21 @@ app.get("/trpc", (c) => {
  */
 let lastMtime: Date | null;
 app.get("/tailwind.css", async (c) => {
-  const stat = await Deno.stat("./dist");
+  try {
+    const stat = await Deno.stat("./dist");
 
-  if (stat.mtime?.getTime() !== lastMtime?.getTime()) {
-    try {
+    if (stat.mtime?.getTime() !== lastMtime?.getTime()) {
       const p = Deno.run({
-        cmd: ["tailwindcss", "-i", "./app/global.css", "--content", "./app/**/*.tsx", "-o", "./dist/tailwind.css"],
+        cmd: ["tailwindcss", "-i", "./src/global.css", "--content", "./src/**/*.tsx", "-o", "./dist/tailwind.css"],
         stdout: "null",
         stderr: "null"
       });
       await p.status();
       lastMtime = stat.mtime;
-    } catch (error) {
-      console.error(error)
+
     }
+  } catch (error) {
+    console.error(error)
   }
 
   return serveFile(c.req, "./dist/tailwind.css");
@@ -149,7 +150,7 @@ async function bundle(moduleTree: ModuleTree): Promise<esbuild.Metafile> {
 
             return {
               contents,
-              resolveDir: path.resolve(Deno.cwd()),
+              resolveDir: path.join(Deno.cwd(), "./src"),
               loader: "js",
             };
           }
@@ -159,14 +160,16 @@ async function bundle(moduleTree: ModuleTree): Promise<esbuild.Metafile> {
   }
 
   const res = await esbuild.build({
-    entryPoints: ["./app/entry.client.tsx", ...moduleTree.map(it => `${it.modulePath}?browser`)],
+    entryPoints: ["./entry.client.tsx", ...moduleTree.map(it => `${it.modulePath}?browser`)],
     platform: "browser",
     format: "esm",
     bundle: true,
     splitting: true,
-    outdir: "dist",
+    outdir: "../dist",
     minify: config.mode === "production",
     treeShaking: true,
+    tsconfig: "../tsconfig.esbuild.json",
+    absWorkingDir: path.join(Deno.cwd(), "src"),
     entryNames: "[dir]/[name]-[hash]",
     chunkNames: "_shared/[name]-[hash]",
     assetNames: "_assets/[name]-[hash]",
@@ -214,7 +217,7 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
   const metafile = await bundle(moduleTree);
   const files = Object.entries(metafile.outputs)
     .map(([name, file]) => ({
-      name,
+      name: name.replace("../", ""),
       input: Object.keys(file.inputs).at(-1)!
     }));
 

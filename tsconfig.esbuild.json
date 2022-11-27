@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable"],
+    "paths": {
+      "$lib": ["./src/lib.tsx"],
+      "$db": ["./src/db/db.server.ts"]
+    }
+  }
+}

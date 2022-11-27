@@ -1,4 +1,4 @@
-import { Config } from "./app/lib.tsx";
+import { Config } from "./lib.tsx";
 
 const config: Config = {
   mode: "development",

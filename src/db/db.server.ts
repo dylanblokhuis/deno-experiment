@@ -82,7 +82,7 @@ export async function migrate() {
         }
       },
       path,
-      migrationFolder: path.join(Deno.cwd(), './app/db/migrations'),
+      migrationFolder: path.join(Deno.cwd(), './src/db/migrations'),
     })
   });
   const { error, results } = await migrator.migrateToLatest()

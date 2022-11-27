@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react'
 import { appRouter } from '../../../api/router.server.ts'
-import { FieldTable } from '../../../db/db.server.ts'
-import { Context, useLoaderData } from "../../../lib.tsx"
+import { FieldTable } from '$db'
+import { Context, useLoaderData } from "$lib"
 import { clsx } from "clsx"
 import z from "zod";
-import { formDataToObject } from '../../../lib/validation.ts'
+import { formDataToObject } from '../../utils/validation.ts'
 
 // import { zodResolver } from '@hookform/resolvers/zod';
 

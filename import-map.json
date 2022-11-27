@@ -10,6 +10,8 @@
     "@trpc/client": "npm:@trpc/client@10.0.0",
     "zod": "npm:zod@3.19.1",
     "kysely": "npm:kysely",
-    "clsx": "npm:clsx"
+    "clsx": "npm:clsx",
+    "$lib": "./src/lib.tsx",
+    "$db": "./src/db/db.server.ts"
   }
 }

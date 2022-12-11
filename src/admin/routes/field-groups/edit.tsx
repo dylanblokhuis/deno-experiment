@@ -6,20 +6,18 @@ import { clsx } from "clsx"
 import z from "zod";
 import { ValidatedForm } from '$lib/forms.tsx'
 import Input from '../../components/form/Input.tsx'
-
-// import { zodResolver } from '@hookform/resolvers/zod';
+import Select from '../../components/form/Select.tsx'
 
 const schema = z.object({
   name: z
     .string()
     .min(1, { message: "Name is required" }),
-  lastName: z
-    .string()
-    .min(1, { message: "Last name is required" }),
-  email: z
-    .string()
-    .min(1, { message: "Email is required" })
-    .email("Must be a valid email"),
+  field: z.array(
+    z.object({
+      name: z.string().min(1, { message: "Name is required" }),
+      type: z.string().min(1)
+    })
+  ),
 });
 
 export async function action(ctx: Context) {
@@ -149,19 +147,14 @@ function TableRow({ field, index }: { field: Field, index: number }) {
       </tr>
       <tr className={clsx(!isOpen && "hidden")}>
         <td colSpan={4} className='py-5 px-4'>
-          <div className='flex flex-col gap-y-8'>
-            <label className='flex flex-col'>
-              <span>Field Type</span>
-              <select name={`field[${index}]type`}>
-                {fieldTypes.map((fieldType) => (
-                  <option key={fieldType.id} value={fieldType.id}>{fieldType.name}</option>
-                ))}
-              </select>
-            </label>
+          <div className='flex flex-col gap-y-4'>
+            <Select label='Field type' name={`field[${index}].type`}>
+              {fieldTypes.map((fieldType) => (
+                <option key={fieldType.id} value={fieldType.id}>{fieldType.name}</option>
+              ))}
+            </Select>
 
-
-            <Input type="text" name={`field[${index}]name`} label='Name' />
-
+            <Input type="text" name={`field[${index}].name`} label='Name' />
           </div>
         </td>
       </tr>

@@ -11,11 +11,11 @@ body.admin {
 }
 
 body.admin input[type=text] {
-    @apply border rounded px-2 py-1 
+    @apply border rounded px-2 py-2 
 }
 
 body.admin select {
-  @apply border rounded px-2 py-1 ;
+  @apply border rounded px-2 py-2 ;
 }
 
 body.admin .button {

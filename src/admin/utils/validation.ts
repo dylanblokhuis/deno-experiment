@@ -1,3 +1,6 @@
+// deno-lint-ignore-file no-explicit-any
+import { pathOr } from "remeda";
+
 const stringToPathArray = <T extends string>(
   path: T
 ): (string | number)[] => {
@@ -52,4 +55,15 @@ export function formDataToObject(formData: FormData | Record<string, any>) {
   return [...map.entries()].reduce((acc, [key, value]) => {
     return setPath(acc, key, value.length === 1 ? value[0] : value);
   }, {} as Record<string, unknown | unknown[]>);
+}
+
+// pathOr types don't support deeper than 3 levels, but the code works
+export const getPath = (object: any, path: string) =>
+  pathOr(object, stringToPathArray(path) as any, undefined);
+
+export function pathToString(array: (string | number)[]): string {
+  return array.reduce(function (string: string, item: string | number) {
+    const prefix = string === "" ? "" : ".";
+    return string + (isNaN(Number(item)) ? prefix + item : "[" + item + "]");
+  }, "");
 }

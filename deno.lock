@@ -166,6 +166,7 @@
       "kysely": "kysely@0.22.0",
       "react-dom@18": "react-dom@18.2.0_react@18.2.0",
       "react@18": "react@18.2.0",
+      "remeda@1.3.0": "remeda@1.3.0",
       "zod@3.19.1": "zod@3.19.1"
     },
     "packages": {
@@ -200,6 +201,10 @@
       "react@18.2.0": {
         "integrity": "sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==",
         "dependencies": { "loose-envify": "loose-envify@1.4.0" }
+      },
+      "remeda@1.3.0": {
+        "integrity": "sha512-DJkLBUzi0dEigDuyPtVe50aNzQq8EBQOintPaxvzwSNreXOGsRnvfGiK+cTsY+nUgGCBrcFxcvH8MIg2skfIZA==",
+        "dependencies": {}
       },
       "scheduler@0.23.0": {
         "integrity": "sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==",

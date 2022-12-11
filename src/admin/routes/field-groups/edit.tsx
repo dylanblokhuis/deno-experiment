@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { appRouter } from '../../../api/router.server.ts'
-import { FieldTable } from '$db'
+import { FieldTable } from '$db.server'
 import { Context, useLoaderData } from "$lib"
 import { clsx } from "clsx"
 import z from "zod";

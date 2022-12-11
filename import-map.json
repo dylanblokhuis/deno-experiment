@@ -13,6 +13,6 @@
     "clsx": "npm:clsx",
     "$lib": "./src/lib.tsx",
     "$lib/": "./src/lib/",
-    "$db": "./src/db/db.server.ts"
+    "$db.server": "./src/db/db.server.ts"
   }
 }

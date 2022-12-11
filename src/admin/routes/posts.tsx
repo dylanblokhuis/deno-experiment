@@ -1,5 +1,5 @@
 import React from 'react'
-import db from '$db'
+import db from '$db.server'
 import { Context, useLoaderData } from '$lib'
 
 export async function loader(ctx: Context) {

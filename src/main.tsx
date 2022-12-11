@@ -15,7 +15,7 @@ import { appRouter } from "./api/router.server.ts";
 import { handleRequest } from "./entry.server.tsx"
 import routes from "./routes.tsx"
 import { Admin } from "./admin/layout/admin.tsx";
-import { migrate } from "$db";
+import { migrate } from "$db.server";
 
 declare global {
   interface Window {
@@ -126,6 +126,7 @@ async function bundle(moduleTree: ModuleTree): Promise<esbuild.Metafile> {
 
             const browserSafeRouteExports: { [name: string]: boolean } = {
               default: true,
+              Head: true,
             };
 
             try {
@@ -221,13 +222,10 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
       input: Object.keys(file.inputs).at(-1)!
     }));
 
-
-  console.log(moduleTree);
-
   const res = handleRequest({
     moduleTree,
     files,
-    // @ts-expect-error - use the map, otherwise it would require using .getters 50x times.
+    // @ts-expect-error - use private _map, otherwise it would require using getters 50x times.
     variables: ctx._map
   })
 

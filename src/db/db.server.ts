@@ -1,4 +1,4 @@
-import { ColumnType, FileMigrationProvider, Generated, Kysely, Migrator, SqliteAdapter, SqliteIntrospector, SqliteQueryCompiler } from "kysely";
+import { ColumnType, Generated, Kysely, Migration, Migrator, SqliteAdapter, SqliteIntrospector, SqliteQueryCompiler } from "kysely";
 import { Database as SqliteDatabase } from "https://deno.land/x/sqlite3@0.6.1/mod.ts";
 import { SqliteDriver } from "./driver.ts";
 import * as path from "https://deno.land/std@0.166.0/path/mod.ts";
@@ -70,20 +70,23 @@ const db = new Kysely<Database>({
 export async function migrate() {
   const migrator = new Migrator({
     db: db,
-    provider: new FileMigrationProvider({
-      // @ts-ignore - node compat just has the wrong type
-      fs: {
-        readdir: async (dir) => {
-          const paths = [];
-          for await (const dirEntry of Deno.readDir(dir)) {
-            paths.push(dirEntry.name);
+    provider: {
+      getMigrations: async () => {
+        const migrationDirPath = path.join(Deno.cwd(), "./src/db/migrations");
+        const migrationFiles = await Deno.readDir(migrationDirPath);
+        const migrations: Record<string, Migration> = {};
+        for await (const migration of migrationFiles) {
+          const { up, down } = await import(path.join(migrationDirPath, `./${migration.name}`));
+
+          migrations[migration.name] = {
+            up,
+            down,
           }
-          return paths;
         }
-      },
-      path,
-      migrationFolder: path.join(Deno.cwd(), './src/db/migrations'),
-    })
+
+        return migrations
+      }
+    }
   });
   const { error, results } = await migrator.migrateToLatest()
   if (results && results.length > 0) {

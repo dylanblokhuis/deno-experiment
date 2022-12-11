@@ -39,7 +39,7 @@ function _setPathNormalized(
 }
 
 
-export function formDataToObject(formData: FormData) {
+export function formDataToObject(formData: FormData | Record<string, any>) {
   const map: Map<string, unknown[]> = new Map();
   for (const [key, value] of formData.entries()) {
     if (map.has(key)) {

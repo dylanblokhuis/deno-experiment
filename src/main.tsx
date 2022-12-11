@@ -189,7 +189,7 @@ export type ModuleTree = {
   actionData: AppData,
   exports: string[],
   module: React.FC<{ children?: React.ReactNode }>,
-
+  head?: React.FC
   modulePath: string
 }[]
 
@@ -204,10 +204,10 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
   const modulePath = Array.isArray(modulePaths) ? modulePaths : [modulePaths];
   const moduleTree: ModuleTree = await Promise.all(modulePath.map(async (modulePath) => {
     const module = await import(modulePath) as RouteModule;
-    ctx.env
     return {
       loaderData: module.loader ? await module.loader(ctx) : null,
       actionData: module.action && ctx.req.method === "POST" ? await module.action(ctx) : null,
+      head: module.Head,
       exports: Object.keys(module),
       module: module.default,
       modulePath: modulePath
@@ -220,6 +220,9 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
       name: name.replace("../", ""),
       input: Object.keys(file.inputs).at(-1)!
     }));
+
+
+  console.log(moduleTree);
 
   const res = handleRequest({
     moduleTree,
@@ -241,13 +244,6 @@ await Promise.all([
       return new Response("request isn't trying to upgrade to websocket.");
     }
     const { response } = Deno.upgradeWebSocket(req);
-    // socket.onopen = () => console.log("socket opened");
-    // socket.onmessage = (e) => {
-    //   console.log("socket message:", e.data);
-    //   socket.send(new Date().toString());
-    // };
-    // socket.onerror = (e) => console.log("socket errored:", e);
-    // socket.onclose = () => console.log("socket closed");
 
     return response;
   }, { port: config.livereloadWsPort || 8002 })

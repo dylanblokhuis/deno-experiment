@@ -162,7 +162,6 @@
   "npm": {
     "specifiers": {
       "@trpc/server@10.0.0": "@trpc/server@10.0.0",
-      "clsx": "clsx@1.2.1",
       "kysely": "kysely@0.22.0",
       "react-dom@18": "react-dom@18.2.0_react@18.2.0",
       "react@18": "react@18.2.0",
@@ -171,10 +170,6 @@
     "packages": {
       "@trpc/server@10.0.0": {
         "integrity": "sha512-PnSlKM3WtguEb1hryekuVlR00QOR8nbFKuZbuLbzfkLju+xOB+F3NplWW5YMVBywWdJKasX/inQDKur2SHyPfg==",
-        "dependencies": {}
-      },
-      "clsx@1.2.1": {
-        "integrity": "sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==",
         "dependencies": {}
       },
       "js-tokens@4.0.0": {

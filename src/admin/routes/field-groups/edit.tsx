@@ -4,14 +4,15 @@ import { FieldTable } from '$db'
 import { Context, useLoaderData } from "$lib"
 import { clsx } from "clsx"
 import z from "zod";
-import { formDataToObject } from '../../utils/validation.ts'
+import { ValidatedForm } from '$lib/forms.tsx'
+import Input from '../../components/form/Input.tsx'
 
 // import { zodResolver } from '@hookform/resolvers/zod';
 
 const schema = z.object({
-  firstName: z
+  name: z
     .string()
-    .min(1, { message: "First name is required" }),
+    .min(1, { message: "Name is required" }),
   lastName: z
     .string()
     .min(1, { message: "Last name is required" }),
@@ -48,24 +49,12 @@ export default function EditFieldGroups() {
   const { fieldTypes } = useLoaderData<typeof loader>();
   const [fields, setFields] = useState<Field[]>([]);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    // console.log(formDataObj);
-
-    console.log(formDataToObject(formData));
-    // const fieldValues = schema.safeParse(formDataObj);
-
-
-    // console.log(fieldValues);
-  }
-
   return (
-    <form onSubmit={handleSubmit} method='post' className='grid grid-cols-3 gap-x-10'>
+    <ValidatedForm schema={schema} className='grid grid-cols-3 gap-x-10'>
       <div className='col-span-2 rounded-lg border bg-white p-5'>
         <h1 className='text-lg font-bold mb-4'>New Field Group</h1>
 
-        <input type="text" name="name" className='border mb-4' />
+        <Input label='Name' type="text" name='name' className='mb-4' />
 
         <table className='w-full'>
           <thead>
@@ -98,7 +87,7 @@ export default function EditFieldGroups() {
                       slug: "title",
                       type_id: fieldTypes[0].id
                     }])
-                  }} className='bg-blue-500 text-white px-4 ml-auto text-sm py-1 rounded-lg' type='button'>Add Field</button>
+                  }} className='button' type='button'>Add Field</button>
                 </div>
               </td>
             </tr>
@@ -110,13 +99,13 @@ export default function EditFieldGroups() {
           Save
         </button>
       </div>
-    </form>
+    </ValidatedForm>
 
   )
 }
 
 function TableRow({ field, index }: { field: Field, index: number }) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(true)
   const classes = 'py-5 border-b border-slate-200 px-4';
   const { fieldTypes } = useLoaderData<typeof loader>();
   function getFieldType(fieldTypeId: number) {
@@ -135,7 +124,7 @@ function TableRow({ field, index }: { field: Field, index: number }) {
         </td>
         <td className={classes}>{field.slug}</td>
         <td className={classes}>
-          <div className='flex items-center gap-x-4'>
+          <div className='flex items-center justify-between gap-x-4'>
             <span>{getFieldType(field.type_id)?.name}</span>
 
             <button className={isOpen ? '' : 'transform -rotate-90'} onClick={() => setIsOpen(!isOpen)} type='button'>
@@ -160,8 +149,20 @@ function TableRow({ field, index }: { field: Field, index: number }) {
       </tr>
       <tr className={clsx(!isOpen && "hidden")}>
         <td colSpan={4} className='py-5 px-4'>
-          Hey
-          <input type="text" name={`field[${index}]label`} />
+          <div className='flex flex-col gap-y-8'>
+            <label className='flex flex-col'>
+              <span>Field Type</span>
+              <select name={`field[${index}]type`}>
+                {fieldTypes.map((fieldType) => (
+                  <option key={fieldType.id} value={fieldType.id}>{fieldType.name}</option>
+                ))}
+              </select>
+            </label>
+
+
+            <Input type="text" name={`field[${index}]name`} label='Name' />
+
+          </div>
         </td>
       </tr>
     </>

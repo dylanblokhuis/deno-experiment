@@ -4,6 +4,10 @@ import { App, AppContext, RouteContext } from './lib.tsx';
 import Root from './root.tsx';
 
 export function handleRequest(app: App) {
+  const headElements = app.moduleTree.map((treeNode) => {
+    return treeNode.head && treeNode.head({ loaderData: treeNode.loaderData, actionData: treeNode.actionData });
+  }).filter((head) => head);
+
   function recursive(index: number, Module?: React.FC<{ children?: React.ReactNode }>) {
     if (index === app.moduleTree.length && Module) {
       return <Module children={null} />;
@@ -24,7 +28,7 @@ export function handleRequest(app: App) {
 
   return renderToString(
     <AppContext.Provider value={app}>
-      <Root>
+      <Root head={headElements}>
         {recursive(0)}
       </Root>
     </AppContext.Provider>

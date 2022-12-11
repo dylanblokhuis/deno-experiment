@@ -11,5 +11,13 @@ body.admin {
 }
 
 body.admin input[type=text] {
-    @apply border rounded px-2 py-1;
+    @apply border rounded px-2 py-1 
+}
+
+body.admin select {
+  @apply border rounded px-2 py-1 ;
+}
+
+body.admin .button {
+  @apply rounded px-4 py-1 bg-blue-600 text-white shadow;
 }

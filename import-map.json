@@ -12,6 +12,7 @@
     "kysely": "npm:kysely",
     "clsx": "npm:clsx",
     "$lib": "./src/lib.tsx",
+    "$lib/": "./src/lib/",
     "$db": "./src/db/db.server.ts"
   }
 }

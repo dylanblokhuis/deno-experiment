@@ -90,6 +90,7 @@ export interface RouteModule {
   default: React.FC<{ children?: React.ReactNode }>,
   loader?: (ctx: Context) => Promise<Response>,
   action?: (ctx: Context) => Promise<Response>,
+  Head?: React.FC
 }
 
 export function useLoaderData<T = AppData>(): SerializeFrom<T> {
@@ -102,6 +103,11 @@ export function useLoaderData<T = AppData>(): SerializeFrom<T> {
 
   const module = appContext.moduleTree.find(item => item.modulePath === modulePath);
   return module?.loaderData
+}
+
+export type HeadArgs<L = AppData, A = AppData> = {
+  loaderData?: SerializeFrom<L>,
+  actionData?: SerializeFrom<A>,
 }
 
 // this part is created by the remix team, all credit to them https://github.com/remix-run/remix

@@ -14,7 +14,7 @@ import { App, AppData, RouteModule, Context, ContextEnvironment } from "./lib.ts
 import { appRouter } from "./api/router.server.ts";
 import { handleRequest } from "./entry.server.tsx"
 import routes from "./routes.tsx"
-import { Admin } from "./admin/layout/admin.tsx";
+import { Admin, loader } from "./admin/layout/admin.tsx";
 import { migrate } from "$db.server";
 
 declare global {
@@ -203,33 +203,45 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
   ctx._map = contextVariables;
 
   const modulePath = Array.isArray(modulePaths) ? modulePaths : [modulePaths];
-  const moduleTree: ModuleTree = await Promise.all(modulePath.map(async (modulePath) => {
-    const module = await import(modulePath) as RouteModule;
-    return {
-      loaderData: module.loader ? await module.loader(ctx) : null,
-      actionData: module.action && ctx.req.method === "POST" ? await module.action(ctx) : null,
-      head: module.Head,
-      exports: Object.keys(module),
-      module: module.default,
-      modulePath: modulePath
-    }
-  }));
+  let moduleTree: ModuleTree;
 
-  const metafile = await bundle(moduleTree);
-  const files = Object.entries(metafile.outputs)
-    .map(([name, file]) => ({
-      name: name.replace("../", ""),
-      input: Object.keys(file.inputs).at(-1)!
+  try {
+    moduleTree = await Promise.all(modulePath.map(async (modulePath) => {
+      const module = await import(modulePath) as RouteModule;
+
+      return {
+        loaderData: module.loader ? await module.loader(ctx) : null,
+        actionData: module.action && ctx.req.method === "POST" ? await module.action(ctx) : null,
+        head: module.Head,
+        exports: Object.keys(module),
+        module: module.default,
+        modulePath: modulePath
+      }
     }));
 
-  const res = handleRequest({
-    moduleTree,
-    files,
-    // @ts-expect-error - use private _map, otherwise it would require using getters 50x times.
-    variables: ctx._map
-  })
+    const metafile = await bundle(moduleTree);
+    const files = Object.entries(metafile.outputs)
+      .map(([name, file]) => ({
+        name: name.replace("../", ""),
+        input: Object.keys(file.inputs).at(-1)!
+      }));
 
-  return ctx.html('<!DOCTYPE html>' + res);
+    const res = handleRequest({
+      moduleTree,
+      files,
+      // @ts-expect-error - use private _map, otherwise it would require using getters 50x times.
+      variables: ctx._map
+    })
+
+    return ctx.html('<!DOCTYPE html>' + res);
+  } catch (error) {
+    if (error instanceof Response) {
+      return error;
+    }
+
+    // TODO: handle error page here
+    throw error;
+  }
 }
 
 await migrate();

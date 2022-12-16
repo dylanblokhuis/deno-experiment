@@ -1,66 +1,80 @@
 // deno-lint-ignore-file no-explicit-any
 import React, { createContext, useEffect, useRef } from "react"
-import { formDataToObject, pathToString } from "../admin/utils/validation.ts"
+import { formDataToObject, getPath, pathToString } from "../admin/utils/validation.ts"
 import { z } from "zod";
+import { useActionData } from "../lib.tsx";
 
 interface FormContextValues {
   isSubmitting: boolean
   touched: Record<string, boolean>,
   setTouched: (values: Record<string, boolean>) => void,
-  errors: Record<string, string>,
-  setErrors: (values: Record<string, string>) => void,
+  errors: Record<string, string> | null,
+  setErrors: (values: Record<string, string> | null) => void,
   defaultValues?: Record<string, any>,
 }
 const FormContext = createContext<FormContextValues | null>(null)
 
-export function ValidatedForm(
+export function ValidatedForm<T, U extends z.ZodTypeDef>(
   props: {
-    defaultValues?: Record<string, any>,
+    defaultValues?: Partial<T>,
     className?: string,
     children: React.ReactNode,
-    schema: z.ZodObject<any>,
+    schema: z.Schema<T, U, unknown>,
+    middleware?: (values: Partial<T>) => Partial<T>
   }
 ) {
-  const [touched, setTouched] = React.useState<FormContextValues["touched"]>({});
-  const [errors, setErrors] = React.useState<FormContextValues["errors"]>({});
+  const actionData = useActionData();
+  const [touched, setTouched] = React.useState<FormContextValues["touched"]>(actionData?.errors || {});
+  const [errors, setErrors] = React.useState<FormContextValues["errors"]>(actionData?.errors || {});
   const ref = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (!ref.current) return;
     if (Object.keys(touched).length === 0) return;
 
-    const obj = formDataToObject(new FormData(ref.current));
-    console.log("Form Data obj", obj);
+    const { errors } = validate(props.schema, new FormData(ref.current))
+    setErrors(errors)
+  }, [touched]);
 
-    try {
-      props.schema.parse(obj)
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const errors: Record<string, string> = {};
-        for (const issue of error.issues) {
-          const path = pathToString(issue.path);
-          console.log(path);
+  useEffect(() => {
+    if (!ref.current) return;
 
-          if (!errors[path]) errors[path] = issue.message;
-        }
+    function handleFormChange(form: HTMLFormElement) {
+      if (!props.middleware) return;
+      const formData = new FormData(form);
+      const obj = formDataToObject(formData) as T
+      const values = props.middleware(obj)
 
-        console.log(errors);
-
-        setErrors(errors)
+      for (const key of formData.keys()) {
+        const value = getPath(values, key)
+        // @ts-ignore - elements is typed weirdly
+        const htmlElement = form.elements[key];
+        if (!htmlElement) continue;
+        htmlElement.value = value
       }
     }
-  }, [touched]);
+
+    ref.current.addEventListener("change", (event) => {
+      const input = event.target as HTMLInputElement
+      if (!input.name) return;
+      if (!input.form) return;
+      if (!props.middleware) return;
+
+      handleFormChange(input.form)
+    })
+    handleFormChange(ref.current)
+  }, [])
 
   return (
     <FormContext.Provider value={{
       isSubmitting: false,
       touched,
       setTouched,
-      defaultValues: props.defaultValues,
+      defaultValues: actionData?.values || props.defaultValues,
       errors,
       setErrors,
     }}>
-      <form ref={ref} method="post">{props.children}</form>
+      <form className={props.className} ref={ref} method="post">{props.children}</form>
     </FormContext.Provider>
   )
 }
@@ -70,9 +84,41 @@ export function useField(name: string) {
   if (!context) throw new Error("useField must be used inside a FormContext")
 
   return {
-    name,
-    defaultValue: context.defaultValues?.[name],
-    error: context.touched[name] && context.errors[name],
-    onBlur: () => context.setTouched({ ...context.touched, [name]: true }),
+    error: context.errors && context.errors[name],
+    props: {
+      name,
+      defaultValue: getPath(context.defaultValues, name),
+      onBlur: () => context.setTouched({ ...context.touched, [name]: true }),
+    }
+  }
+}
+
+export function validate<T, U extends z.ZodTypeDef>(schema: z.Schema<T, U, unknown>, formData: FormData): {
+  errors: Record<string, string> | null,
+  values: T,
+} {
+  const obj = formDataToObject(formData);
+
+  try {
+    schema.parse(obj)
+    return {
+      errors: null,
+      values: obj as T,
+    }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const errors: Record<string, string> = {};
+      for (const issue of error.issues) {
+        const path = pathToString(issue.path);
+        if (!errors[path]) errors[path] = issue.message;
+      }
+
+      return {
+        errors,
+        values: obj as T,
+      }
+    }
+
+    throw new Error(error)
   }
 }

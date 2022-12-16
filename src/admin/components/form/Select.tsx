@@ -10,15 +10,15 @@ interface Props extends React.InputHTMLAttributes<HTMLSelectElement> {
   children: React.ReactNode
 }
 export default function Select({ name, label, className, children, ...rest }: Props) {
-  const field = useField(name)
+  const { error, props } = useField(name)
 
   return (
     <label className={clsx('flex flex-col', className)}>
       <Label text={label} />
-      <select {...rest} {...field}>
+      <select {...rest} {...props}>
         {children}
       </select>
-      {field.error && <Error text={field.error} />}
+      {error && <Error text={error} />}
     </label>
   )
 }

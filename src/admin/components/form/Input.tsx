@@ -9,13 +9,13 @@ interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string
 }
 export default function Input({ name, label, className, ...rest }: Props) {
-  const field = useField(name)
+  const { error, props } = useField(name)
 
   return (
     <label className={clsx('flex flex-col', className)}>
       <Label text={label} />
-      <input {...rest} {...field} />
-      {field.error && <Error text={field.error} />}
+      <input className={clsx(error && "ha")} {...rest} {...props} />
+      {error && <Error text={error} />}
     </label>
   )
 }

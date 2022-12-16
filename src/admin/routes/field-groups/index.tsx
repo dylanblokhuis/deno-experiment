@@ -1,11 +1,10 @@
 import React from 'react'
 import db from '$db.server'
 import { Context, useLoaderData } from '$lib'
+import { appRouter } from '../../../api/router.server.ts';
 
 export async function loader(ctx: Context) {
-  const groups = await db.selectFrom("field_group").selectAll().execute();
-
-  return groups;
+  return await appRouter.createCaller({}).getFieldGroups();
 }
 
 export default function Fields() {
@@ -24,7 +23,7 @@ export default function Fields() {
         <div key={group.id} className='mt-4'>
           <div className='flex items-center'>
             <h2 className='text-xl font-bold mr-4'>{group.name}</h2>
-            <a className='text-blue-500 underline' href={`/admin/field-groups/edit/${group.id}`}>
+            <a className='text-blue-500 underline' href={`/admin/field-groups/edit?id=${group.id}`}>
               Edit
             </a>
           </div>

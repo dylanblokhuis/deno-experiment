@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { pathOr } from "remeda";
 
-const stringToPathArray = <T extends string>(
+export const stringToPathArray = <T extends string>(
   path: T
 ): (string | number)[] => {
   if (path.length === 0) return [];
@@ -41,14 +41,14 @@ function _setPathNormalized(
   return object;
 }
 
-
 export function formDataToObject(formData: FormData | Record<string, any>) {
   const map: Map<string, unknown[]> = new Map();
   for (const [key, value] of formData.entries()) {
+    const realValue = value ? !isNaN(value) ? parseInt(value) : value : String(value)
     if (map.has(key)) {
-      map.get(key)!.push(String(value));
+      map.get(key)!.push(realValue);
     } else {
-      map.set(key, [value]);
+      map.set(key, [realValue]);
     }
   }
 

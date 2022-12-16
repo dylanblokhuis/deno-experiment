@@ -7,7 +7,7 @@ import type { Admin } from "./admin/layout/admin.tsx";
 
 type ContextVariables = {
   bodyClasses: string[],
-  admin: Admin
+  admin: Admin,
 }
 export type ContextEnvironment = { Variables: ContextVariables }
 export type Context = HonoContext<"", ContextEnvironment>
@@ -103,6 +103,18 @@ export function useLoaderData<T = AppData>(): SerializeFrom<T> {
 
   const module = appContext.moduleTree.find(item => item.modulePath === modulePath);
   return module?.loaderData
+}
+
+export function useActionData<T = AppData>(): SerializeFrom<T> | null {
+  const appContext = React.useContext(AppContext);
+  const modulePath = React.useContext(RouteContext);
+
+  if (!appContext || !modulePath) {
+    throw new Error("useLoaderData must be used inside a route component");
+  }
+
+  const module = appContext.moduleTree.find(item => item.modulePath === modulePath);
+  return module?.actionData
 }
 
 export type HeadArgs<L = AppData, A = AppData> = {

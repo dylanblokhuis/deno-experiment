@@ -14,7 +14,7 @@ export function handleRequest(app: App) {
     }
 
     const treeNode = app.moduleTree[index];
-    const Current = treeNode.module;
+    const Current = treeNode.module!;
     if (Module?.propTypes?.children) {
       return <Module children={
         <RouteContext.Provider value={treeNode.modulePath}>

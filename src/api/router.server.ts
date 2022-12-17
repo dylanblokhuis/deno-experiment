@@ -32,6 +32,7 @@ export const appRouter = t.router({
           id: z.number(),
           name: z.string(),
           fields: z.array(z.object({
+            id: z.number(),
             name: z.string(),
             slug: z.string(),
             type_id: z.number(),
@@ -46,17 +47,16 @@ export const appRouter = t.router({
 
       if (!fieldGroup) return null;
 
-      const fields = await db.selectFrom("field_group")
+      const fields = await db.selectFrom("field")
         .selectAll()
-        .innerJoin("field", "field.field_group_id", "field_group.id")
-        .selectAll()
-        .where("field_group.id", '=', input.id)
+        .where("field_group_id", '=', input.id)
         .execute();
 
       return {
         id: fieldGroup.id,
         name: fieldGroup.name,
         fields: fields.map((field) => ({
+          id: field.id,
           name: field.name,
           slug: field.slug,
           type_id: field.type_id,
@@ -86,7 +86,7 @@ export const appRouter = t.router({
 
         for (const field of input.fields) {
           if (field.id) {
-            await db.updateTable("field").set(field).execute();
+            await db.updateTable("field").where("id", "=", field.id).set(field).execute();
           } else {
             await db.insertInto("field").values({
               ...field,
@@ -102,6 +102,7 @@ export const appRouter = t.router({
         id = res.id;
 
         for (const field of input.fields) {
+
           await db.insertInto("field").values({
             ...field,
             field_group_id: id,
@@ -110,6 +111,15 @@ export const appRouter = t.router({
       }
 
       return { id };
+    }),
+  deleteFieldGroup: t.procedure
+    .input(
+      z.object({
+        id: z.number(),
+      })
+    ).mutation(async ({ input }) => {
+      const res = await db.deleteFrom("field_group").where("id", "=", input.id).executeTakeFirst();
+      return res;
     }),
 });
 

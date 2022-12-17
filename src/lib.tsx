@@ -75,7 +75,7 @@ export function AppBrowser() {
     }
 
     const [modulePath, module] = routeModules[index];
-    const Current = module.default;
+    const Current = module.default!;
     if (Module?.propTypes?.children) {
       return <Module children={<RouteContext.Provider value={modulePath}><Current children={recursive(index + 1, Current)} /></RouteContext.Provider>} />
     }
@@ -87,7 +87,7 @@ export function AppBrowser() {
 }
 
 export interface RouteModule {
-  default: React.FC<{ children?: React.ReactNode }>,
+  default?: React.FC<{ children?: React.ReactNode }>,
   loader?: (ctx: Context) => Promise<Response>,
   action?: (ctx: Context) => Promise<Response>,
   Head?: React.FC
@@ -181,7 +181,7 @@ type UndefinedToOptional<T extends object> = {
   };
 
 type ArbitraryFunction = (...args: any[]) => unknown;
-type TypedResponse<T extends unknown = unknown> = Response & {
+export type TypedResponse<T extends unknown = unknown> = Response & {
   json(): Promise<T>;
 };
 /**

@@ -70,6 +70,7 @@ app.get("/tailwind.css", async (c) => {
     console.error(error)
   }
 
+  // TODO: cache in prod
   return serveFile(c.req, "./dist/tailwind.css");
 })
 
@@ -189,10 +190,11 @@ export type ModuleTree = {
   loaderData: AppData,
   actionData: AppData,
   exports: string[],
-  module: React.FC<{ children?: React.ReactNode }>,
+  module?: React.FC<{ children?: React.ReactNode }>,
   head?: React.FC
   modulePath: string
 }[]
+
 
 async function handler(ctx: Context, modulePaths: string | string[]) {
   const contextVariables: ContextEnvironment["Variables"] = {
@@ -208,10 +210,27 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
   try {
     moduleTree = await Promise.all(modulePath.map(async (modulePath) => {
       const module = await import(modulePath) as RouteModule;
+      if (!module.default) {
+        if (module.action && ctx.req.method === "POST") throw await module.action(ctx)
+        if (module.loader) throw await module.loader(ctx)
+        throw new Error("No modules found inside the route")
+      }
+
+      async function extract(callback: (ctx: Context) => Promise<unknown>) {
+        let data = await callback(ctx);
+        if (data instanceof Response) {
+          if (data.headers.has("set-cookie")) {
+            ctx.header("set-cookie", data.headers.get("set-cookie")!);
+          }
+          data = await data.json()
+        }
+
+        return data;
+      }
 
       return {
-        loaderData: module.loader ? await module.loader(ctx) : null,
-        actionData: module.action && ctx.req.method === "POST" ? await module.action(ctx) : null,
+        loaderData: module.loader ? await extract(module.loader) : undefined,
+        actionData: module.action && ctx.req.method === "POST" ? await extract(module.action) : undefined,
         head: module.Head,
         exports: Object.keys(module),
         module: module.default,
@@ -236,7 +255,11 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
     return ctx.html('<!DOCTYPE html>' + res);
   } catch (error) {
     if (error instanceof Response) {
-      return error;
+      for (const [key, value] of error.headers.entries()) {
+        ctx.header(key, value);
+      }
+      // @ts-expect-error - StatusCode type isnt exposed
+      return ctx.newResponse(error.body, error.status)
     }
 
     // TODO: handle error page here

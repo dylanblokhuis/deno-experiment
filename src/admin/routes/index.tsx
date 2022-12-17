@@ -1,8 +1,6 @@
 import React from 'react'
-
 export default function Admin() {
   return (
-    <div>Hello
-    </div>
+    <div>Hello</div>
   )
 }

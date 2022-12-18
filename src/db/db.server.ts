@@ -8,13 +8,26 @@ const sqlite = new SqliteDatabase("app.db");
 interface PostTable {
   id: Generated<number>;
   title: string;
+  post_type_id: number;
   created_at: ColumnType<Date, string | undefined, never>
+  updated_at: ColumnType<Date, string | undefined, never>
+}
+
+interface PostTypeTable {
+  id: Generated<number>;
+  name: string;
+  slug: string;
 }
 
 interface FieldGroupTable {
   id: Generated<number>;
   name: string;
   created_at: ColumnType<Date, string | undefined, never>
+}
+
+interface FieldGroupOnPostTypeTable {
+  field_group_id: number;
+  post_type_id: number;
 }
 
 interface FieldTypeTable {
@@ -42,7 +55,9 @@ interface PostFieldTable {
 
 export interface Database {
   post: PostTable,
+  post_type: PostTypeTable,
   field_group: FieldGroupTable,
+  field_group_on_post_type: FieldGroupOnPostTypeTable,
   field_type: FieldTypeTable,
   field: FieldTable,
   post_field: PostFieldTable

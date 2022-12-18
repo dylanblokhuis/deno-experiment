@@ -33,8 +33,12 @@ export function loader(context: Context) {
     name: "Dashboard"
   })
   admin.addMenuItem({
-    pathname: "/admin/posts",
+    pathname: "/admin/posts?postType=post",
     name: "Posts"
+  })
+  admin.addMenuItem({
+    pathname: "/admin/posts?postType=page",
+    name: "Pages"
   })
   admin.addMenuItem({
     pathname: "/admin/field-groups",

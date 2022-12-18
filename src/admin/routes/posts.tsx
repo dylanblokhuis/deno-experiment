@@ -1,19 +1,25 @@
 import React from 'react'
-import db from '$db.server'
 import { Context, useLoaderData } from '$lib'
+import { appRouterCaller } from '../../api/router.server.ts';
+import { redirect } from '$lib/server.ts';
 
 export async function loader(ctx: Context) {
-  const posts = await db.selectFrom("post").selectAll().execute();
-  return posts;
+  const postTypeSlug = new URL(ctx.req.url).searchParams.get("postType") || "post";
+  const postType = await appRouterCaller.getPostType({ slug: postTypeSlug });
+  if (!postType) throw redirect("/admin");
+  return {
+    posts: await appRouterCaller.getPosts({ postType: postType.id }),
+    postType: postType
+  }
 }
 
 
 export default function Posts() {
-  const posts = useLoaderData<typeof loader>();
+  const { posts, postType } = useLoaderData<typeof loader>();
 
   return (
     <div>
-      Posts
+      {postType.name}
 
       <table className='w-full'>
         <thead>

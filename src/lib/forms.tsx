@@ -50,7 +50,16 @@ export function ValidatedForm<T, U extends z.ZodTypeDef>(
         // @ts-ignore - elements is typed weirdly
         const htmlElement = form.elements[key];
         if (!htmlElement) continue;
-        htmlElement.value = value
+
+        if (htmlElement instanceof HTMLInputElement) {
+          htmlElement.value = value
+        }
+        if (htmlElement instanceof HTMLSelectElement) {
+          for (const option of htmlElement.options) {
+            const optionValue = option.value ? !isNaN(option.value as any) ? parseInt(option.value) : option.value : String(option.value)
+            option.selected = Array.isArray(value) ? value.includes(optionValue) : value === optionValue
+          }
+        }
       }
     }
 

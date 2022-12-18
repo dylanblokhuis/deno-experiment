@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { appRouter } from '../../../api/router.server.ts'
+import { appRouterCaller } from '../../../api/router.server.ts'
 import { Context, useActionData, useLoaderData } from "$lib"
 import { clsx } from "clsx"
 import z from "zod";
@@ -14,6 +14,7 @@ const schema = z.object({
   name: z
     .string()
     .min(1),
+  postTypes: z.array(z.number()).or(z.number()),
   fields: z.array(
     z.object({
       id: z.number().optional(),
@@ -26,17 +27,24 @@ const schema = z.object({
 
 export async function action(ctx: Context) {
   const result = validate(schema, await ctx.req.formData());
+
+  console.log(result.errors);
+
   if (result.errors) return result
   const { values } = result
 
-  const { id } = await appRouter.createCaller({}).createOrUpdateFieldGroup({
+  const { id } = await appRouterCaller.createOrUpdateFieldGroup({
     id: values.id,
     name: values.name,
+    postTypes: Array.isArray(values.postTypes) ? values.postTypes : [values.postTypes],
     fields: values.fields.map(fields => ({
       ...fields,
       type_id: fields.type_id
     }))
   })
+
+  console.log("sdsd", id);
+
 
   const session = await getSession(ctx.req.headers);
   session.flash("message", "Field group saved");
@@ -49,17 +57,18 @@ export async function action(ctx: Context) {
 }
 
 export async function loader(ctx: Context) {
-  const caller = appRouter.createCaller({})
-  const fieldTypes = await caller.getFieldTypes();
+  const fieldTypes = await appRouterCaller.getFieldTypes();
   const id = new URL(ctx.req.url).searchParams.get("id");
+  const postTypes = await appRouterCaller.getPostTypes();
 
   if (!id) return json({
     fieldTypes: fieldTypes,
     fieldGroup: null,
+    postTypes,
     message: null
   })
 
-  const fieldGroup = await caller.getFieldGroup({ id: parseInt(id) });
+  const fieldGroup = await appRouterCaller.getFieldGroup({ id: parseInt(id) });
 
   const session = await getSession(ctx.req.headers);
   const message = session.get("message") as string | null;
@@ -67,6 +76,7 @@ export async function loader(ctx: Context) {
   return json({
     fieldTypes: fieldTypes,
     fieldGroup: fieldGroup,
+    postTypes,
     message: message
   }, {
     headers: {
@@ -79,11 +89,9 @@ type Fields = z.infer<typeof schema>["fields"];
 type Field = z.infer<typeof schema>["fields"][0];
 
 export default function EditFieldGroups() {
-  const { fieldTypes, fieldGroup, message } = useLoaderData<typeof loader>();
+  const { fieldTypes, fieldGroup, message, postTypes } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [fields, setFields] = useState<Fields>(actionData?.values.fields || fieldGroup?.fields || []);
-
-  console.log(fieldGroup);
 
   return (
     <div>
@@ -111,6 +119,7 @@ export default function EditFieldGroups() {
       <ValidatedForm
         defaultValues={{
           name: fieldGroup?.name,
+          postTypes: fieldGroup?.connectedPostTypes,
           fields: fieldGroup?.fields || []
         }}
         middleware={(values) => {
@@ -127,7 +136,7 @@ export default function EditFieldGroups() {
           }
 
           return values
-        }} schema={schema} className='grid grid-cols-3 gap-x-10'>
+        }} schema={schema} className='grid grid-cols-3 gap-x-10 items-start'>
         <div className='col-span-2 rounded-lg border bg-white p-5'>
           <h1 className='text-lg font-bold mb-4'>
             {fieldGroup ? (
@@ -179,7 +188,13 @@ export default function EditFieldGroups() {
             </tfoot>
           </table>
         </div>
-        <div className="px-4 py-4 bg-white border rounded-lg">
+        <div className="px-4 py-4 bg-white border rounded-lg flex flex-col items-start">
+          <Select label='Connect to post types' name='postTypes' multiple className='mb-4'>
+            {postTypes.map((postType) => (
+              <option key={postType.id} value={postType.id}>{postType.name}</option>
+            ))}
+          </Select>
+
           <button className='button' type="submit">
             Save
           </button>

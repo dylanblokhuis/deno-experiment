@@ -3,9 +3,19 @@ import { Database } from "../db.server.ts"
 
 export async function up(db: Kysely<Database>): Promise<void> {
   await db.schema
+    .createTable("post_type")
+    .addColumn("id", "integer", (col) => col.primaryKey().autoIncrement())
+    .addColumn("name", "varchar", (col) => col.notNull())
+    .addColumn("slug", "varchar", (col) => col.notNull())
+    .addColumn("created_at", "datetime", (col) => col.notNull().defaultTo(sql`current_timestamp`))
+    .addColumn("updated_at", "datetime", (col) => col.notNull().defaultTo(sql`current_timestamp`))
+    .execute()
+
+  await db.schema
     .createTable('post')
     .addColumn('id', 'integer', (col) => col.primaryKey().autoIncrement())
     .addColumn('title', 'varchar', (col) => col.notNull())
+    .addColumn('post_type_id', 'integer', (col) => col.notNull().references('post_type.id'))
     .addColumn('created_at', 'datetime', (col) => col.notNull().defaultTo(sql`current_timestamp`))
     .addColumn('updated_at', 'datetime', (col) => col.notNull().defaultTo(sql`current_timestamp`))
     .execute()
@@ -15,6 +25,12 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn('id', 'integer', (col) => col.primaryKey().autoIncrement())
     .addColumn('name', 'varchar', (col) => col.notNull())
     .addColumn('created_at', 'datetime', (col) => col.notNull().defaultTo(sql`current_timestamp`))
+    .execute()
+
+  await db.schema
+    .createTable('field_group_on_post_type')
+    .addColumn('field_group_id', 'integer', (col) => col.notNull().references('field_group.id'))
+    .addColumn('post_type_id', 'integer', (col) => col.notNull().references('post_type.id'))
     .execute()
 
   await db.schema
@@ -48,9 +64,17 @@ export async function up(db: Kysely<Database>): Promise<void> {
       name: item
     }).execute();
   }
+
+  for (const item of ["Post", "Page"]) {
+    await db.insertInto("post_type").values({
+      name: item,
+      slug: item.toLowerCase()
+    }).execute();
+  }
 }
 
-export async function down(db: Kysely<any>): Promise<void> {
+export async function down(db: Kysely<unknown>): Promise<void> {
+  await db.schema.dropTable('post_type').execute()
   await db.schema.dropTable('post').execute()
   await db.schema.dropTable('field_group').execute()
   await db.schema.dropTable('field_type').execute()

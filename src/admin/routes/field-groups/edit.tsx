@@ -40,9 +40,6 @@ export async function action(ctx: Context) {
     }))
   })
 
-  console.log("sdsd", id);
-
-
   const session = await getSession(ctx.req.headers);
   session.flash("message", "Field group saved");
 

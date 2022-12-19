@@ -2,7 +2,7 @@ import React from 'react'
 import { clsx } from 'clsx'
 import { useField } from '$lib/forms.tsx'
 import Label from './internal/Label.tsx'
-import Error from './internal/Error.tsx'
+import FieldError from './internal/FieldError.tsx'
 
 interface Props extends React.InputHTMLAttributes<HTMLSelectElement> {
   name: string
@@ -18,7 +18,7 @@ export default function Select({ name, label, className, children, ...rest }: Pr
       <select {...rest} {...props}>
         {children}
       </select>
-      {error && <Error text={error} />}
+      {error && <FieldError text={error} />}
     </label>
   )
 }

@@ -15,6 +15,8 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .createTable('post')
     .addColumn('id', 'integer', (col) => col.primaryKey().autoIncrement())
     .addColumn('title', 'varchar', (col) => col.notNull())
+    .addColumn('status', 'varchar', (col) => col.notNull())
+    .addColumn('slug', 'varchar', (col) => col.notNull())
     .addColumn('post_type_id', 'integer', (col) => col.notNull().references('post_type.id'))
     .addColumn('created_at', 'datetime', (col) => col.notNull().defaultTo(sql`current_timestamp`))
     .addColumn('updated_at', 'datetime', (col) => col.notNull().defaultTo(sql`current_timestamp`))

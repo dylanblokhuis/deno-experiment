@@ -16,6 +16,7 @@ import { handleRequest } from "./entry.server.tsx"
 import routes from "./routes.tsx"
 import { Admin, loader } from "./admin/layout/admin.tsx";
 import { migrate } from "$db.server";
+import { denoPlugin } from "https://deno.land/x/esbuild_deno_loader@0.5.2/mod.ts";
 
 declare global {
   interface Window {

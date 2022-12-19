@@ -1,7 +1,7 @@
 import React from 'react'
 import { clsx } from 'clsx'
 import { useField } from '$lib/forms.tsx'
-import Error from './internal/Error.tsx'
+import FieldError from './internal/FieldError.tsx'
 import Label from './internal/Label.tsx'
 
 interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -15,7 +15,7 @@ export default function Input({ name, label, className, ...rest }: Props) {
     <label className={clsx('flex flex-col', className)}>
       <Label text={label} />
       <input className={clsx(error && "ha")} {...rest} {...props} />
-      {error && <Error text={error} />}
+      {error && <FieldError text={error} />}
     </label>
   )
 }

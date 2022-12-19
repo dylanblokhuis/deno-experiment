@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { router, procedure } from '../trpc.server.ts';
 import db from "$db.server";
+import { titleToSlug } from "$lib/utils/slugify.ts";
 
 export const postRouter = router({
   getPostType: procedure
@@ -35,23 +36,11 @@ export const postRouter = router({
 
       return await db.selectFrom("post").where("post_type_id", "=", postTypeId).selectAll().execute();
     }),
-
   getPost: procedure
     .input(
       z.object({
         id: z.number(),
       })
-    )
-    .output(
-      z.object({
-        id: z.number(),
-        title: z.string(),
-        postTypeId: z.number(),
-        fields: z.array(z.object({
-          id: z.number(),
-          value: z.string(),
-        }))
-      }).optional()
     )
     .query(async ({ input }) => {
       const post = await db.selectFrom("post").selectAll().where("id", '=', input.id).executeTakeFirst();
@@ -59,9 +48,7 @@ export const postRouter = router({
 
       const fields = await db.selectFrom("post_field").selectAll().where("post_id", '=', input.id).execute();
       return {
-        id: post.id,
-        title: post.title,
-        postTypeId: post.post_type_id,
+        ...post,
         fields: fields.map((field) => ({
           id: field.field_id,
           value: field.value,
@@ -72,7 +59,9 @@ export const postRouter = router({
     z.object({
       id: z.number().optional(),
       title: z.string(),
+      slug: z.string().optional(),
       postTypeId: z.number(),
+      status: z.enum(["draft", "published"]),
       fields: z.array(z.object({
         id: z.number(),
         value: z.string(),
@@ -83,12 +72,15 @@ export const postRouter = router({
     if (postId) {
       await db.updateTable("post").set({
         title: input.title,
+        slug: input.slug ? titleToSlug(input.slug) : undefined,
+        status: input.status,
         post_type_id: input.postTypeId,
       }).where("id", "=", postId).execute();
-      // await db.deleteFrom("post_field").where("post_id", "=", postId).execute();
     } else {
       const post = await db.insertInto("post").values({
         title: input.title,
+        slug: titleToSlug(input.slug || input.title),
+        status: input.status,
         post_type_id: input.postTypeId,
       }).returning("id").executeTakeFirst();
       if (!post) throw new Error("Post not created");

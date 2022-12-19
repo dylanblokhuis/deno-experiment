@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import React, { createContext, useEffect, useRef } from "react"
-import { formDataToObject, getPath, pathToString } from "../admin/utils/validation.ts"
+import { formDataToObject, getPath, pathToString } from "$lib/utils/validation.ts"
 import { z } from "zod";
 import { useActionData } from "../lib.tsx";
 

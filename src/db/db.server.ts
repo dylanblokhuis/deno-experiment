@@ -8,6 +8,8 @@ const sqlite = new SqliteDatabase("app.db");
 interface PostTable {
   id: Generated<number>;
   title: string;
+  status: "trash" | "draft" | "published"
+  slug: string;
   post_type_id: number;
   created_at: ColumnType<Date, string | undefined, never>
   updated_at: ColumnType<Date, string | undefined, never>

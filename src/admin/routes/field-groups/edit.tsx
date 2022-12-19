@@ -27,9 +27,6 @@ const schema = z.object({
 
 export async function action(ctx: Context) {
   const result = validate(schema, await ctx.req.formData());
-
-  console.log(result.errors);
-
   if (result.errors) return result
   const { values } = result
 

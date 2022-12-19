@@ -43,6 +43,7 @@ export function ValidatedForm<T, U extends z.ZodTypeDef>(
       if (!props.middleware) return;
       const formData = new FormData(form);
       const obj = formDataToObject(formData) as T
+
       const values = props.middleware(obj)
 
       for (const key of formData.keys()) {

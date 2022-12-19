@@ -1,6 +1,6 @@
 import React from 'react'
 import { Context, useLoaderData } from '$lib'
-import { appRouterCaller } from '../../api/router.server.ts';
+import { appRouterCaller } from '../../../api/router.server.ts';
 import { redirect } from '$lib/server.ts';
 
 export async function loader(ctx: Context) {
@@ -19,10 +19,10 @@ export default function Posts() {
 
   return (
     <div>
-      {postType.name}
+      {postType.name} - <a className='text-blue-500 underline' href={`/admin/posts/edit?postType=${postType.slug}`}>Add New</a>
 
       <table className='w-full'>
-        <thead>
+        <thead className='text-left'>
           <tr>
             <th>Title</th>
             <th>Created At</th>
@@ -31,7 +31,7 @@ export default function Posts() {
         <tbody>
           {posts.map((post) => (
             <tr key={post.id}>
-              <td>{post.title}</td>
+              <td><a className='text-blue-500 underline' href={`/admin/posts/edit?postType=${postType.slug}&id=${post.id}`}>{post.title}</a></td>
               <td>{post.created_at}</td>
             </tr>
           ))}

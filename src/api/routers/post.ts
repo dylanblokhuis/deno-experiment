@@ -70,17 +70,27 @@ export const postRouter = router({
     })
   ).mutation(async ({ input }) => {
     let postId = input.id;
+
+    const slug = titleToSlug(input.slug || input.title);
+    const postExistsWithSlug = await db.selectFrom("post")
+      .where('slug', '=', slug)
+      .if(postId !== undefined, (query) => query.where('id', '!=', postId as number))
+      .select(["id", "slug"])
+      .executeTakeFirst();
+
+    if (postExistsWithSlug) throw new Error("Post with this slug already exists")
+
     if (postId) {
       await db.updateTable("post").set({
         title: input.title,
-        slug: input.slug ? titleToSlug(input.slug) : undefined,
+        slug: input.slug ? slug : undefined,
         status: input.status,
         post_type_id: input.postTypeId,
       }).where("id", "=", postId).execute();
     } else {
       const post = await db.insertInto("post").values({
         title: input.title,
-        slug: titleToSlug(input.slug || input.title),
+        slug: slug,
         status: input.status,
         post_type_id: input.postTypeId,
       }).returning("id").executeTakeFirst();

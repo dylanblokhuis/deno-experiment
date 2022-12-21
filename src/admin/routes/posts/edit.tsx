@@ -10,6 +10,7 @@ import Select from '../../components/form/Select.tsx';
 import { titleToSlug } from '$lib/utils/slugify.ts';
 import FieldError from '../../components/form/internal/FieldError.tsx';
 import { clsx } from "clsx"
+import Alert from '../../components/Alert.tsx';
 
 const fieldKey = (fieldId: number) => `field_${fieldId}`
 
@@ -59,24 +60,35 @@ export async function action(ctx: Context) {
   if (values.status === "trash") {
     throw new Error("You can't make a post that has trash as a status")
   }
-
-  const id = await appRouterCaller.createOrUpdatePost({
-    id: searchParams.has("id") ? parseInt(searchParams.get("id")!) : undefined,
-    status: values.status,
-    title: values.title,
-    slug: post?.slug !== values.slug ? values.slug : undefined,
-    postTypeId: postType.id,
-    fields: fields
-  })
-
   const session = await getSession(ctx.req.headers);
-  session.flash("message", "Post saved");
 
-  throw redirect(`/admin/posts/edit?postType=${postType.slug}&id=${id}`, {
-    headers: {
-      "Set-Cookie": await commitSession(session)
-    }
-  })
+  let id = searchParams.has("id") ? parseInt(searchParams.get("id")!) : undefined;
+  try {
+    id = await appRouterCaller.createOrUpdatePost({
+      id: id,
+      status: values.status,
+      title: values.title,
+      slug: post?.slug !== values.slug ? values.slug : undefined,
+      postTypeId: postType.id,
+      fields: fields
+    })
+    session.flash("message", "Post saved");
+    throw redirect(`/admin/posts/edit?postType=${postType.slug}&id=${id}`, {
+      headers: {
+        "Set-Cookie": await commitSession(session)
+      }
+    })
+  } catch (error) {
+    session.flash("error", error.message);
+
+    return json({
+      values
+    }, {
+      headers: {
+        "Set-Cookie": await commitSession(session)
+      }
+    })
+  }
 }
 
 export async function loader(ctx: Context) {
@@ -95,14 +107,16 @@ export async function loader(ctx: Context) {
   }
 
   const session = await getSession(ctx.req.headers);
-  const message = session.get("message");
+  const message = session.get("message") as string | undefined;
+  const error = session.get("error") as string | undefined;
 
   return json({
     fieldGroups: fieldGroups,
     fieldTypes: fieldTypes,
     postType: postType,
     post,
-    message
+    message,
+    error
   }, {
     headers: {
       "Set-Cookie": await commitSession(session)
@@ -115,7 +129,7 @@ type Field = NonNullable<SerializeFrom<typeof loader>["fieldGroups"]>[0]["fields
 type FieldType = NonNullable<SerializeFrom<typeof loader>["fieldTypes"]>[0];
 
 export default function Edit() {
-  const { fieldGroups, postType, fieldTypes, post, message } = useLoaderData<typeof loader>();
+  const { fieldGroups, postType, fieldTypes, post, message, error } = useLoaderData<typeof loader>();
 
   function fieldType(id: number) {
     const fieldType = fieldTypes.find((fieldType) => fieldType.id === id);
@@ -131,24 +145,11 @@ export default function Edit() {
   return (
     <div>
       {message && (
-        <div className="flex bg-green-100 rounded-lg p-4 mb-4 text-sm text-green-700" role="alert">
-          <svg className="inline mr-3" xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 16L12 12"></path>
-            <path d="M12 8L12.01 8"></path>
-          </svg>
-          <div>
-            {message}
-          </div>
-        </div>
+        <Alert type='success' message={message} className='mb-4' />
+      )}
+
+      {error && (
+        <Alert type='error' message={error} className='mb-4' />
       )}
 
       <ValidatedForm

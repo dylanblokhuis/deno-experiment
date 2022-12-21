@@ -9,6 +9,7 @@ import { commitSession, getSession } from "$lib/session.server.ts";
 import Select from '../../components/form/Select.tsx';
 import { titleToSlug } from '$lib/utils/slugify.ts';
 import FieldError from '../../components/form/internal/FieldError.tsx';
+import { clsx } from "clsx"
 
 const fieldKey = (fieldId: number) => `field_${fieldId}`
 
@@ -157,8 +158,8 @@ export default function Edit() {
           status: post?.status || "draft",
           ...fieldsMapped
         }}
-        middleware={values => {
-          if (values.title && !post?.slug) {
+        middleware={(values, touched) => {
+          if (values.title && !post?.slug && touched?.slug === undefined) {
             values.slug = titleToSlug(values.title);
           }
           return values;
@@ -171,7 +172,7 @@ export default function Edit() {
             New {postType.name}
           </h1>}
 
-          <SlugEditor />
+          <SlugEditor postType={postType} />
           <Input type="text" name="title" label="Title" className='mb-4' />
 
           <div className='flex flex-col gap-y-4'>
@@ -206,16 +207,23 @@ export default function Edit() {
   )
 }
 
-function SlugEditor() {
+function SlugEditor({ postType }: { postType: SerializeFrom<typeof loader>["postType"] }) {
   const { props, error } = useField("slug");
   const [editing, setEditing] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
 
   const value = ref.current?.value || props.defaultValue
+  const userShownPath = postType.path_prefix ? `${postType.path_prefix}/${value}/` : `/${value}/`;
+
   return <div className='mb-4 flex items-center gap-x-3'>
-    {(value && !editing) && <span className='underline text-blue-500'>/{value}/</span>}
-    <input className='w-full' type={editing ? "text" : "hidden"} name="slug" defaultValue={ref.current?.value || props.defaultValue} ref={ref} />
-    <button title={editing ? "Save" : "Edit"} onClick={() => setEditing(!editing)} type='button'>
+    {(value && !editing) && <a href={userShownPath} target="_blank" className='underline text-blue-500'>{userShownPath}</a>}
+    {(value && editing && postType.path_prefix) && <span className='text-gray-500'>{postType.path_prefix}/</span>}
+
+    <input className={clsx('w-full', !editing && "hidden")} type="text" name="slug" onBlur={props.onBlur} defaultValue={value} ref={ref} />
+
+    {value && <button title={editing ? "Save" : "Edit"} onClick={() => {
+      setEditing(!editing)
+    }} type='button'>
       {editing ? <svg
         xmlns="http://www.w3.org/2000/svg"
         width="20"
@@ -245,7 +253,7 @@ function SlugEditor() {
       >
         <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
       </svg>}
-    </button>
+    </button>}
 
     {error && <FieldError text={error} />}
   </div>

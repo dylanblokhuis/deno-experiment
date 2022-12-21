@@ -1,4 +1,4 @@
-import type { Route } from './lib.tsx'
+import type { Module, Route } from './lib.tsx'
 import { isAuthorised } from './api/middleware.ts'
 
 const routes: Route[] = [
@@ -10,4 +10,5 @@ const routes: Route[] = [
   ["/admin/field-groups/delete", isAuthorised, ["./admin/routes/field-groups/delete.ts"]],
 ]
 
+export const runtimeRoutes: Map<Route[0], [number, Module]> = new Map();
 export default routes;

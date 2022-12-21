@@ -1,3 +1,5 @@
+import { appRouterCaller } from "../api/router.server.ts";
+
 export { getSession, commitSession } from "./session.server.ts"
 
 export type RedirectFunction = (
@@ -46,4 +48,16 @@ export const json: JsonFunction = (data, init = {}) => {
     ...responseInit,
     headers,
   });
+}
+
+export class Post {
+  private id: number;
+  constructor(id: number) {
+    this.id = id;
+  }
+
+  async data() {
+    const post = await appRouterCaller.getPost({ id: this.id });
+    return post;
+  }
 }

@@ -28,6 +28,7 @@ export function loader(context: Context) {
   context.set("bodyClasses", [...context.get("bodyClasses"), "admin"]);
 
   const admin = context.get("admin")
+  if (!admin) throw new Error("This loader is called outside of the /admin path")
   admin.addMenuItem({
     pathname: "/admin",
     name: "Dashboard"
@@ -53,7 +54,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className='flex bg-slate-100 w-full h-full'>
       <aside className='bg-slate-900 text-white flex-none w-64 p-4'>
         <ul className='flex flex-col gap-y-2'>
-          {variables.admin.menuItems.map((item) => (
+          {variables.admin?.menuItems.map((item) => (
             <li key={item.pathname}>
               <a href={item.pathname}>{item.name}</a>
             </li>

@@ -10,13 +10,13 @@ import * as esbuild from "https://deno.land/x/esbuild@v0.14.51/mod.js";
 import * as path from "https://deno.land/std@0.165.0/path/mod.ts";
 import { Hono } from 'hono'
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch"
-import { App, AppData, RouteModule, Context, ContextEnvironment } from "./lib.tsx";
-import { appRouter } from "./api/router.server.ts";
+import { App, AppData, RouteModule, Context, ContextEnvironment, Module } from "./lib.tsx";
+import { Post } from "$lib/server.ts";
+import { appRouter, appRouterCaller } from "./api/router.server.ts";
 import { handleRequest } from "./entry.server.tsx"
-import routes from "./routes.tsx"
-import { Admin, loader } from "./admin/layout/admin.tsx";
+import routes, { runtimeRoutes } from "./routes.tsx"
+import { Admin } from "./admin/layout/admin.tsx";
 import { migrate } from "$db.server";
-import { denoPlugin } from "https://deno.land/x/esbuild_deno_loader@0.5.2/mod.ts";
 
 declare global {
   interface Window {
@@ -79,6 +79,28 @@ app.get("/dist/*", (c) => serveDir(c.req, {
   fsRoot: ".",
   quiet: true,
 }));
+
+// TODO: add service worker?
+app.get("/sw.js", () => new Response(null, { status: 404 }))
+
+app.get("*", async (c, next) => {
+  if (runtimeRoutes.size === 0) {
+    await appRouterCaller.generateRuntimeRoutes();
+  }
+
+  const url = new URL(c.req.url);
+  for (const [route, [postId, module]] of runtimeRoutes) {
+    if (url.pathname === route) {
+      return c.redirect(route + "/")
+    } else if (url.pathname === route + "/") {
+      c.set("post", new Post(postId));
+      return handler(c, module as Module)
+    }
+  }
+
+  await next()
+})
+
 
 async function bundle(moduleTree: ModuleTree): Promise<esbuild.Metafile> {
   // thanks to the remix.run team for building these plugins
@@ -198,9 +220,11 @@ export type ModuleTree = {
 
 
 async function handler(ctx: Context, modulePaths: string | string[]) {
+  const url = new URL(ctx.req.url);
   const contextVariables: ContextEnvironment["Variables"] = {
     bodyClasses: [],
-    admin: new Admin()
+    admin: url.pathname.startsWith("/admin") ? new Admin() : undefined,
+    post: ctx.get("post"),
   }
   // @ts-expect-error - setting the default values to conform the interface
   ctx._map = contextVariables;
@@ -269,7 +293,6 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
 }
 
 await migrate();
-
 await Promise.all([
   serve(app.fetch, { port: 3000 }),
   config.mode === "development" && serve(function (req: Request) {

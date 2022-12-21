@@ -7,6 +7,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("id", "integer", (col) => col.primaryKey().autoIncrement())
     .addColumn("name", "varchar", (col) => col.notNull())
     .addColumn("slug", "varchar", (col) => col.notNull())
+    .addColumn("path_prefix", "varchar")
     .addColumn("created_at", "datetime", (col) => col.notNull().defaultTo(sql`current_timestamp`))
     .addColumn("updated_at", "datetime", (col) => col.notNull().defaultTo(sql`current_timestamp`))
     .execute()
@@ -70,7 +71,8 @@ export async function up(db: Kysely<Database>): Promise<void> {
   for (const item of ["Post", "Page"]) {
     await db.insertInto("post_type").values({
       name: item,
-      slug: item.toLowerCase()
+      slug: item.toLowerCase(),
+      path_prefix: item === "Post" ? "/posts" : null
     }).execute();
   }
 }

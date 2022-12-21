@@ -11,6 +11,7 @@ interface FormContextValues {
   errors: Record<string, string> | null,
   setErrors: (values: Record<string, string> | null) => void,
   defaultValues?: Record<string, any>,
+  values: Record<string, any>,
 }
 const FormContext = createContext<FormContextValues | null>(null)
 
@@ -20,13 +21,14 @@ export function ValidatedForm<T, U extends z.ZodTypeDef>(
     className?: string,
     children: React.ReactNode,
     schema: z.Schema<T, U, unknown>,
-    middleware?: (values: Partial<T>) => Partial<T>
+    middleware?: (values: Partial<T>, touched: Record<string, boolean>) => Partial<T>
   }
 ) {
   const actionData = useActionData();
   const [touched, setTouched] = React.useState<FormContextValues["touched"]>(actionData?.errors || {});
   const [errors, setErrors] = React.useState<FormContextValues["errors"]>(actionData?.errors || {});
   const ref = useRef<HTMLFormElement>(null);
+  const [values, setValues] = React.useState<Partial<T>>({});
 
   useEffect(() => {
     if (!ref.current) return;
@@ -36,44 +38,30 @@ export function ValidatedForm<T, U extends z.ZodTypeDef>(
     setErrors(errors)
   }, [touched]);
 
+  function handleFormChange(form: HTMLFormElement) {
+    if (!props.middleware) return;
+    const formData = new FormData(form);
+    const obj = formDataToObject(formData) as T
+
+    setValues(props.middleware(obj, touched))
+  }
+
   useEffect(() => {
     if (!ref.current) return;
 
-    function handleFormChange(form: HTMLFormElement) {
-      if (!props.middleware) return;
-      const formData = new FormData(form);
-      const obj = formDataToObject(formData) as T
-
-      const values = props.middleware(obj)
-
-      for (const key of formData.keys()) {
-        const value = getPath(values, key)
-        // @ts-ignore - elements is typed weirdly
-        const htmlElement = form.elements[key];
-        if (!htmlElement) continue;
-
-        if (htmlElement instanceof HTMLInputElement) {
-          htmlElement.value = value
-        }
-        if (htmlElement instanceof HTMLSelectElement) {
-          for (const option of htmlElement.options) {
-            const optionValue = option.value ? !isNaN(option.value as any) ? parseInt(option.value) : option.value : String(option.value)
-            option.selected = Array.isArray(value) ? value.includes(optionValue) : value === optionValue
-          }
-        }
-      }
-    }
-
-    ref.current.addEventListener("change", (event) => {
+    const handler = (event: Event) => {
       const input = event.target as HTMLInputElement
       if (!input.name) return;
       if (!input.form) return;
       if (!props.middleware) return;
 
       handleFormChange(input.form)
-    })
-    handleFormChange(ref.current)
-  }, [])
+    }
+
+    ref.current.addEventListener("change", handler)
+
+    return () => ref.current?.removeEventListener("change", handler)
+  }, [touched])
 
   return (
     <FormContext.Provider value={{
@@ -83,6 +71,7 @@ export function ValidatedForm<T, U extends z.ZodTypeDef>(
       defaultValues: actionData?.values || props.defaultValues,
       errors,
       setErrors,
+      values
     }}>
       <form className={props.className} ref={ref} method="post">{props.children}</form>
     </FormContext.Provider>
@@ -97,8 +86,8 @@ export function useField(name: string) {
     error: context.errors && context.errors[name],
     props: {
       name,
-      defaultValue: getPath(context.defaultValues, name),
-      onBlur: () => context.setTouched({ ...context.touched, [name]: true }),
+      defaultValue: getPath(context.values, name) || getPath(context.defaultValues, name),
+      onBlur: () => context.setTouched({ ...context.touched, [name]: true })
     }
   }
 }

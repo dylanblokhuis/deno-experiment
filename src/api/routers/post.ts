@@ -2,6 +2,7 @@ import { z } from "zod"
 import { router, procedure } from '../trpc.server.ts';
 import db from "$db.server";
 import { titleToSlug } from "$lib/utils/slugify.ts";
+import { appRouterCaller } from "../router.server.ts";
 
 export const postRouter = router({
   getPostType: procedure
@@ -106,7 +107,7 @@ export const postRouter = router({
 
     // delete fields that arent in the form
     await db.deleteFrom("post_field").where("post_id", "=", postId).where("field_id", "not in", input.fields.map((field) => field.id)).execute();
-
+    await appRouterCaller.generateRuntimeRoutes();
     return postId;
   })
 });

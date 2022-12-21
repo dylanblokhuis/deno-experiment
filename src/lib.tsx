@@ -4,10 +4,12 @@ import { ModuleTree } from "./main.tsx";
 import type { Context as HonoContext, MiddlewareHandler as HonoMiddlewareHandler } from "hono";
 import config from "./config.ts"
 import type { Admin } from "./admin/layout/admin.tsx";
+import { Post } from "./lib/server.ts";
 
 type ContextVariables = {
   bodyClasses: string[],
-  admin: Admin,
+  admin?: Admin,
+  post: Post
 }
 export type ContextEnvironment = { Variables: ContextVariables }
 export type Context = HonoContext<"", ContextEnvironment>
@@ -29,7 +31,7 @@ export function Scripts() {
 
 
   const entryModule = context.files.find(file => {
-    return file.name.startsWith("dist/entry.client");
+    return file.name.includes("entry.client");
   });
 
   const routes: Record<string, string> = {};
@@ -200,7 +202,7 @@ export type SerializeFrom<T extends AppData | ArbitraryFunction> = Serialize<
 
 // routing
 type Middleware = MiddlewareHandler | MiddlewareHandler[]
-type Module = string | string[]
+export type Module = string | string[]
 export type Route = [string, Module] | [string, Middleware, Module]
 
 export interface Config {

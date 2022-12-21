@@ -19,6 +19,7 @@ interface PostTypeTable {
   id: Generated<number>;
   name: string;
   slug: string;
+  path_prefix: string | null
 }
 
 interface FieldGroupTable {

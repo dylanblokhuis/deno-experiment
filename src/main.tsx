@@ -14,7 +14,7 @@ import { handleRequest } from "./entry.server.tsx"
 import routes, { runtimeRoutes } from "./routes.tsx"
 import { Admin } from "./admin/layout/admin.tsx";
 import { migrate } from "$db.server";
-import { Server } from "./webserver/index.ts"
+import { Server } from "./server.ts"
 
 declare global {
   interface Window {

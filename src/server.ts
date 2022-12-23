@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import { RegExpRouter, SmartRouter, StaticRouter, TrieRouter } from 'https://deno.land/x/hono@v2.5.2/mod.ts'
 import { getPathFromURL } from 'https://deno.land/x/hono@v2.5.2/utils/url.ts'
 

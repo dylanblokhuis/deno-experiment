@@ -1,12 +1,10 @@
 // deno-lint-ignore-file no-explicit-any ban-types
 import React from "react"
 import { ModuleTree } from "./main.tsx";
-// import type { Context as HonoContext, MiddlewareHandler as HonoMiddlewareHandler } from "hono";
 import config from "./config.ts"
 import type { Admin } from "./admin/layout/admin.tsx";
 import { Post } from "./lib/server.ts";
-import { Context as EmptyContext, Handler as EmptyHandler } from "./webserver/index.ts";
-// import { Handler } from "https://deno.land/x/hono@v2.5.2/mod";
+import { Context as EmptyContext, Handler as EmptyHandler } from "./server.ts";
 
 export type ContextVariables = {
   bodyClasses: string[],
@@ -15,9 +13,6 @@ export type ContextVariables = {
 }
 export type Context = EmptyContext<ContextVariables>
 export type Handler = EmptyHandler<ContextVariables>
-// export type ContextEnvironment = { Variables: ContextVariables }
-// export type Context = HonoContext<"", ContextEnvironment>
-// export type MiddlewareHandler = HonoMiddlewareHandler<"", ContextEnvironment>
 export interface App {
   moduleTree: ModuleTree,
   files: {

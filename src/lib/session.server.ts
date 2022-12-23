@@ -1,6 +1,4 @@
 import { setCookie, getCookies, Cookie } from "https://deno.land/std@0.168.0/http/cookie.ts";
-import { Context } from "../lib.tsx";
-
 
 interface CookieFactoryOptions extends Omit<Cookie, "value"> {
   secret: string

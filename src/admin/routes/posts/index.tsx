@@ -4,11 +4,11 @@ import { appRouterCaller } from '../../../api/router.server.ts';
 import { redirect } from '$lib/server.ts';
 
 export async function loader(ctx: Context) {
-  const postTypeSlug = new URL(ctx.req.url).searchParams.get("postType") || "post";
-  const postType = await appRouterCaller.getPostType({ slug: postTypeSlug });
+  const postTypeSlug = new URL(ctx.request.url).searchParams.get("postType") || "post";
+  const postType = await appRouterCaller(ctx).getPostType({ slug: postTypeSlug });
   if (!postType) throw redirect("/admin");
   return {
-    posts: await appRouterCaller.getPosts({ postType: postType.id }),
+    posts: await appRouterCaller(ctx).getPosts({ postType: postType.id }),
     postType: postType
   }
 }

@@ -3,7 +3,7 @@ import { router, procedure } from '../trpc.server.ts';
 import db from "$db.server";
 
 export const fieldGroupRouter = router({
-  getFieldTypes: procedure
+  getFieldTypes: procedure.public
     .output(z.array(z.object({
       id: z.number(),
       name: z.string(),
@@ -13,7 +13,7 @@ export const fieldGroupRouter = router({
       return data;
     }),
 
-  getFieldGroups: procedure
+  getFieldGroups: procedure.public
     .input(
       z.object({
         postTypeId: z.number().optional()
@@ -57,7 +57,7 @@ export const fieldGroupRouter = router({
         }
       });
     }),
-  getFieldGroup: procedure
+  getFieldGroup: procedure.public
     .input(
       z.object({
         id: z.number()
@@ -106,7 +106,7 @@ export const fieldGroupRouter = router({
         })),
       };
     }),
-  createOrUpdateFieldGroup: procedure
+  createOrUpdateFieldGroup: procedure.public
     .input(
       z
         .object({
@@ -166,7 +166,7 @@ export const fieldGroupRouter = router({
 
       return { id };
     }),
-  deleteFieldGroup: procedure
+  deleteFieldGroup: procedure.public
     .input(
       z.object({
         id: z.number(),

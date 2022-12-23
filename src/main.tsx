@@ -8,15 +8,13 @@ import { serve } from "https://deno.land/std@0.165.0/http/server.ts";
 import { serveDir, serveFile } from "https://deno.land/std@0.165.0/http/file_server.ts";
 import * as esbuild from "https://deno.land/x/esbuild@v0.14.51/mod.js";
 import * as path from "https://deno.land/std@0.165.0/path/mod.ts";
-import { Hono } from 'hono'
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch"
-import { App, AppData, RouteModule, Context, ContextEnvironment, Module } from "./lib.tsx";
-import { Post } from "$lib/server.ts";
-import { appRouter, appRouterCaller } from "./api/router.server.ts";
+import { App, AppData, RouteModule, Module, Context, ContextVariables } from "./lib.tsx";
+import { generateRuntimeRoutes, headersToObject, Post, redirect } from "$lib/server.ts";
 import { handleRequest } from "./entry.server.tsx"
 import routes, { runtimeRoutes } from "./routes.tsx"
 import { Admin } from "./admin/layout/admin.tsx";
 import { migrate } from "$db.server";
+import { Server } from "./webserver/index.ts"
 
 declare global {
   interface Window {
@@ -25,29 +23,37 @@ declare global {
   }
 }
 
-const app = new Hono<ContextEnvironment>()
+const app = new Server<ContextVariables>();
 
 for (const entry of routes) {
   if (entry.length === 2) {
     const [route, module] = entry;
-    app.get(route, (c) => handler(c, module)).post(route, (c) => handler(c, module));
+    app.get(route, (c) => handler(c, module))
+    app.post(route, (c) => handler(c, module));
   }
   if (entry.length === 3) {
     const [route, middleware, module] = entry;
     for (const mw of Array.isArray(middleware) ? middleware : [middleware]) {
       app.use(route, mw);
     }
-    app.get(route, (c) => handler(c, module)).post(route, (c) => handler(c, module));
+    app.get(route, (c) => handler(c, module))
+    app.post(route, (c) => handler(c, module));
   }
 }
 
-app.get("/trpc", (c) => {
-  return fetchRequestHandler({
-    endpoint: "/trpc",
-    req: c.req,
-    router: appRouter
-  })
-})
+// app.get("/trpc", (c) => {
+//   function contextHandler({ req }: FetchCreateContextFnOptions) {
+//     console.log(req.url);
+//     return { req }
+//   }
+
+//   return fetchRequestHandler({
+//     endpoint: "/trpc",
+//     req: c.req,
+//     router: appRouter,
+//     createContext: contextHandler,
+//   })
+// })
 
 /**
  * Until tailwindcss gets supported by Deno this is a workaround
@@ -72,10 +78,10 @@ app.get("/tailwind.css", async (c) => {
   }
 
   // TODO: cache in prod
-  return serveFile(c.req, "./dist/tailwind.css");
+  return serveFile(c.request, "./dist/tailwind.css");
 })
 
-app.get("/dist/*", (c) => serveDir(c.req, {
+app.get("/dist/*", (c) => serveDir(c.request, {
   fsRoot: ".",
   quiet: true,
 }));
@@ -83,22 +89,20 @@ app.get("/dist/*", (c) => serveDir(c.req, {
 // TODO: add service worker?
 app.get("/sw.js", () => new Response(null, { status: 404 }))
 
-app.get("*", async (c, next) => {
+app.get("*", async (ctx) => {
   if (runtimeRoutes.size === 0) {
-    await appRouterCaller.generateRuntimeRoutes();
+    await generateRuntimeRoutes();
   }
 
-  const url = new URL(c.req.url);
+  const url = new URL(ctx.request.url);
   for (const [route, [postId, module]] of runtimeRoutes) {
     if (url.pathname === route) {
-      return c.redirect(route + "/")
+      return redirect(route + "/")
     } else if (url.pathname === route + "/") {
-      c.set("post", new Post(postId));
-      return handler(c, module as Module)
+      ctx.set("post", new Post(ctx, postId));
+      return handler(ctx, module as Module)
     }
   }
-
-  await next()
 })
 
 
@@ -220,14 +224,9 @@ export type ModuleTree = {
 
 
 async function handler(ctx: Context, modulePaths: string | string[]) {
-  const url = new URL(ctx.req.url);
-  const contextVariables: ContextEnvironment["Variables"] = {
-    bodyClasses: [],
-    admin: url.pathname.startsWith("/admin") ? new Admin() : undefined,
-    post: ctx.get("post"),
-  }
-  // @ts-expect-error - setting the default values to conform the interface
-  ctx._map = contextVariables;
+  const url = new URL(ctx.request.url);
+  ctx.set("bodyClasses", [])
+  ctx.set("admin", url.pathname.startsWith("/admin") ? new Admin() : undefined);
 
   const modulePath = Array.isArray(modulePaths) ? modulePaths : [modulePaths];
   let moduleTree: ModuleTree;
@@ -236,26 +235,47 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
     moduleTree = await Promise.all(modulePath.map(async (modulePath) => {
       const module = await import(modulePath) as RouteModule;
       if (!module.default) {
-        if (module.action && ctx.req.method === "POST") throw await module.action(ctx)
+        if (module.action && ctx.request.method === "POST") throw await module.action(ctx)
         if (module.loader) throw await module.loader(ctx)
         throw new Error("No modules found inside the route")
       }
 
       async function extract(callback: (ctx: Context) => Promise<unknown>) {
         let data = await callback(ctx);
+
+        /**
+         * Response class thrown, so we handle the cases where we need to redirect or set cookies
+         */
         if (data instanceof Response) {
-          if (data.headers.has("set-cookie")) {
-            ctx.header("set-cookie", data.headers.get("set-cookie")!);
+          if (data.headers.has("location")) {
+            throw data
           }
+
+          if (data.headers.has("set-cookie") && ctx.request.method === "POST") {
+            // because the loader following would need the cookie already set, we're simulating the set-cookie behavior on the server.
+            ctx.request = new Request(ctx.request.url, {
+              ...ctx.request,
+              headers: new Headers({
+                ...headersToObject(ctx.request.headers),
+                "cookie": data.headers.get("set-cookie")!,
+              })
+            })
+          } else if (data.headers.has("set-cookie")) {
+            ctx.headers.set("set-cookie", data.headers.get("set-cookie")!)
+          }
+
           data = await data.json()
         }
 
         return data;
       }
 
+      const actionData = module.action && ctx.request.method === "POST" ? await extract(module.action) : undefined;
+      const loaderData = module.loader ? await extract(module.loader) : undefined;
+
       return {
-        loaderData: module.loader ? await extract(module.loader) : undefined,
-        actionData: module.action && ctx.req.method === "POST" ? await extract(module.action) : undefined,
+        actionData,
+        loaderData,
         head: module.Head,
         exports: Object.keys(module),
         module: module.default,
@@ -270,21 +290,29 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
         input: Object.keys(file.inputs).at(-1)!
       }));
 
+    ctx.delete('post')
     const res = handleRequest({
       moduleTree,
       files,
-      // @ts-expect-error - use private _map, otherwise it would require using getters 50x times.
-      variables: ctx._map
+      variables: ctx.variables
     })
 
-    return ctx.html('<!DOCTYPE html>' + res);
+    return new Response('<!DOCTYPE html>' + res, {
+      status: 200,
+      headers: {
+        ...headersToObject(ctx.headers),
+        "content-type": "text/html; charset=utf-8",
+      }
+    });
   } catch (error) {
     if (error instanceof Response) {
-      for (const [key, value] of error.headers.entries()) {
-        ctx.header(key, value);
-      }
-      // @ts-expect-error - StatusCode type isnt exposed
-      return ctx.newResponse(error.body, error.status)
+      return new Response(error.body, {
+        status: error.status,
+        headers: {
+          ...headersToObject(error.headers),
+          ...headersToObject(ctx.headers),
+        }
+      })
     }
 
     // TODO: handle error page here
@@ -293,8 +321,9 @@ async function handler(ctx: Context, modulePaths: string | string[]) {
 }
 
 await migrate();
+
 await Promise.all([
-  serve(app.fetch, { port: 3000 }),
+  serve((req) => app.handleRequest(req), { port: 3000 }),
   config.mode === "development" && serve(function (req: Request) {
     const upgrade = req.headers.get("upgrade") || "";
     if (upgrade.toLowerCase() != "websocket") {

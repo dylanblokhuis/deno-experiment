@@ -1,4 +1,7 @@
 import { appRouterCaller } from "../api/router.server.ts";
+import db from "../db/db.server.ts";
+import { Context } from "../lib.tsx";
+import { runtimeRoutes } from "../routes.tsx";
 
 export { getSession, commitSession } from "./session.server.ts"
 
@@ -52,12 +55,36 @@ export const json: JsonFunction = (data, init = {}) => {
 
 export class Post {
   private id: number;
-  constructor(id: number) {
+  private ctx: Context
+  constructor(ctx: Context, id: number) {
+    this.ctx = ctx;
     this.id = id;
   }
 
   async data() {
-    const post = await appRouterCaller.getPost({ id: this.id });
+    const post = await appRouterCaller(this.ctx).getPost({ id: this.id });
     return post;
   }
+}
+
+export async function generateRuntimeRoutes() {
+  const posts = await db
+    .selectFrom("post")
+    .innerJoin("post_type", "post_type.id", "post_type_id")
+    .select(["post.id", "post.slug", "post_type.path_prefix", "post_type.slug as post_type_slug"])
+    .execute();
+
+  runtimeRoutes.clear();
+  for (const post of posts) {
+    const route = post.path_prefix ? `${post.path_prefix}/${post.slug}` : `/${post.slug}`;
+    runtimeRoutes.set(route, [post.id, `../templates/${post.post_type_slug}.tsx`]);
+  }
+}
+
+export function headersToObject(headers: Headers) {
+  const obj: Record<string, string> = {};
+  for (const [key, value] of headers) {
+    obj[key] = value;
+  }
+  return obj;
 }

@@ -2,10 +2,10 @@ import { z } from "zod"
 import { router, procedure } from '../trpc.server.ts';
 import db from "$db.server";
 import { titleToSlug } from "$lib/utils/slugify.ts";
-import { appRouterCaller } from "../router.server.ts";
+import { generateRuntimeRoutes } from "../../lib/server.ts";
 
 export const postRouter = router({
-  getPostType: procedure
+  getPostType: procedure.public
     .input(
       z.object({
         slug: z.string(),
@@ -14,12 +14,12 @@ export const postRouter = router({
       const postType = await db.selectFrom("post_type").selectAll().where("slug", '=', input.slug).executeTakeFirst();
       return postType;
     }),
-  getPostTypes: procedure
+  getPostTypes: procedure.public
     .query(async () => {
       const postTypes = await db.selectFrom("post_type").selectAll().execute();
       return postTypes;
     }),
-  getPosts: procedure
+  getPosts: procedure.public
     .input(
       z.object({
         postType: z.string().or(z.number()),
@@ -37,7 +37,7 @@ export const postRouter = router({
 
       return await db.selectFrom("post").where("post_type_id", "=", postTypeId).selectAll().execute();
     }),
-  getPost: procedure
+  getPost: procedure.public
     .input(
       z.object({
         id: z.number(),
@@ -56,7 +56,7 @@ export const postRouter = router({
         })),
       };
     }),
-  createOrUpdatePost: procedure.input(
+  createOrUpdatePost: procedure.public.input(
     z.object({
       id: z.number().optional(),
       title: z.string(),
@@ -68,7 +68,7 @@ export const postRouter = router({
         value: z.string(),
       }))
     })
-  ).mutation(async ({ input }) => {
+  ).mutation(async ({ input, ctx }) => {
     let postId = input.id;
 
     const slug = titleToSlug(input.slug || input.title);
@@ -117,7 +117,7 @@ export const postRouter = router({
 
     // delete fields that arent in the form
     await db.deleteFrom("post_field").where("post_id", "=", postId).where("field_id", "not in", input.fields.map((field) => field.id)).execute();
-    await appRouterCaller.generateRuntimeRoutes();
+    await generateRuntimeRoutes();
     return postId;
   })
 });

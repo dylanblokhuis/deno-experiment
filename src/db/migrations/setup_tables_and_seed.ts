@@ -62,6 +62,17 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn('updated_at', 'datetime', (col) => col.notNull().defaultTo(sql`current_timestamp`))
     .execute();
 
+  await db.schema
+    .createTable('user')
+    .addColumn('id', 'integer', (col) => col.primaryKey().autoIncrement())
+    .addColumn('name', 'varchar', (col) => col.notNull())
+    .addColumn('email', 'varchar', (col) => col.notNull())
+    .addColumn('password', 'varchar', (col) => col.notNull())
+    .addColumn('role', 'varchar', (col) => col.notNull())
+    .addColumn('created_at', 'datetime', (col) => col.notNull().defaultTo(sql`current_timestamp`))
+    .addColumn('updated_at', 'datetime', (col) => col.notNull().defaultTo(sql`current_timestamp`))
+    .execute();
+
   for (const item of ["Text", "Number", "Date", "Boolean"]) {
     await db.insertInto("field_type").values({
       name: item
@@ -84,4 +95,5 @@ export async function down(db: Kysely<unknown>): Promise<void> {
   await db.schema.dropTable('field_type').execute()
   await db.schema.dropTable('field').execute()
   await db.schema.dropTable('post_field').execute()
+  await db.schema.dropTable('user').execute()
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useField, validate, ValidatedForm } from '$lib/forms.tsx'
 import { z } from 'zod'
 import { Context, SerializeFrom, useLoaderData } from '$lib';
@@ -41,7 +41,7 @@ const schema = (fieldGroups: FieldGroup[], fieldTypes: FieldType[]) => {
 
 export async function action(ctx: Context) {
   const { fieldGroups, fieldTypes, postType, post } = await (await loader(ctx)).json();
-  const result = validate(schema(fieldGroups, fieldTypes), await ctx.req.formData());
+  const result = validate(schema(fieldGroups, fieldTypes), await ctx.request.formData());
   if (result.errors) return result
   const { values } = result
 
@@ -55,16 +55,16 @@ export async function action(ctx: Context) {
     })
   }
 
-  const searchParams = new URL(ctx.req.url).searchParams;
+  const searchParams = new URL(ctx.request.url).searchParams;
 
   if (values.status === "trash") {
     throw new Error("You can't make a post that has trash as a status")
   }
-  const session = await getSession(ctx.req.headers);
+  const session = await getSession(ctx.request.headers);
 
   let id = searchParams.has("id") ? parseInt(searchParams.get("id")!) : undefined;
   try {
-    id = await appRouterCaller.createOrUpdatePost({
+    id = await appRouterCaller(ctx).createOrUpdatePost({
       id: id,
       status: values.status,
       title: values.title,
@@ -73,13 +73,15 @@ export async function action(ctx: Context) {
       fields: fields
     })
     session.flash("message", "Post saved");
-    throw redirect(`/admin/posts/edit?postType=${postType.slug}&id=${id}`, {
+    return redirect(`/admin/posts/edit?postType=${postType.slug}&id=${id}`, {
       headers: {
         "Set-Cookie": await commitSession(session)
       }
     })
   } catch (error) {
     session.flash("error", error.message);
+
+    console.log(error.message);
 
     return json({
       values
@@ -92,21 +94,23 @@ export async function action(ctx: Context) {
 }
 
 export async function loader(ctx: Context) {
-  const searchParams = new URL(ctx.req.url).searchParams;
+  const searchParams = new URL(ctx.request.url).searchParams;
   const postTypeSlug = searchParams.get("postType") || "post";
-  const postType = await appRouterCaller.getPostType({ slug: postTypeSlug })
+  const caller = appRouterCaller(ctx);
+  const postType = await caller.getPostType({ slug: postTypeSlug })
   if (!postType) throw redirect("/admin");
-  const fieldGroups = await appRouterCaller.getFieldGroups({ postTypeId: postType.id })
-  const fieldTypes = await appRouterCaller.getFieldTypes();
+  const fieldGroups = await caller.getFieldGroups({ postTypeId: postType.id })
+  const fieldTypes = await caller.getFieldTypes();
 
   let post;
   if (searchParams.has("id")) {
-    const maybePost = await appRouterCaller.getPost({ id: parseInt(searchParams.get("id")!) });
+    const maybePost = await caller.getPost({ id: parseInt(searchParams.get("id")!) });
     if (!maybePost) throw redirect("/admin/posts?postType=" + postType.slug);
     post = maybePost;
   }
 
-  const session = await getSession(ctx.req.headers);
+
+  const session = await getSession(ctx.request.headers);
   const message = session.get("message") as string | undefined;
   const error = session.get("error") as string | undefined;
 

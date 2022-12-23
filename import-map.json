@@ -4,7 +4,6 @@
     "react-dom": "https://esm.sh/react-dom@18.2.0",
     "react-dom/server": "https://esm.sh/v96/react-dom@18.2.0/deno/server.js",
     "react-dom/client": "https://esm.sh/v96/react-dom@18.2.0/deno/client.js",
-    "hono": "https://deno.land/x/hono@v2.5.2/mod.ts",
     "@trpc/server": "npm:@trpc/server@10.5.0",
     "@trpc/server/adapters/fetch": "npm:@trpc/server@10.5.0/adapters/fetch",
     "@trpc/client": "npm:@trpc/client@10.5.0",

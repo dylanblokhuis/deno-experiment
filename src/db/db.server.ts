@@ -56,6 +56,17 @@ interface PostFieldTable {
   updated_at: ColumnType<Date, string | undefined, never>
 }
 
+export type Roles = "admin" | "editor" | "subscriber"
+interface UserTable {
+  id: Generated<number>;
+  name: string;
+  email: string;
+  password: string;
+  role: Roles
+  created_at: ColumnType<Date, string | undefined, never>
+  updated_at: ColumnType<Date, string | undefined, never>
+}
+
 export interface Database {
   post: PostTable,
   post_type: PostTypeTable,
@@ -63,7 +74,8 @@ export interface Database {
   field_group_on_post_type: FieldGroupOnPostTypeTable,
   field_type: FieldTypeTable,
   field: FieldTable,
-  post_field: PostFieldTable
+  post_field: PostFieldTable,
+  user: UserTable
 }
 
 const db = new Kysely<Database>({

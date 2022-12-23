@@ -26,11 +26,11 @@ const schema = z.object({
 });
 
 export async function action(ctx: Context) {
-  const result = validate(schema, await ctx.req.formData());
+  const result = validate(schema, await ctx.request.formData());
   if (result.errors) return result
   const { values } = result
 
-  const { id } = await appRouterCaller.createOrUpdateFieldGroup({
+  const { id } = await appRouterCaller(ctx).createOrUpdateFieldGroup({
     id: values.id,
     name: values.name,
     postTypes: Array.isArray(values.postTypes) ? values.postTypes : [values.postTypes],
@@ -40,7 +40,7 @@ export async function action(ctx: Context) {
     }))
   })
 
-  const session = await getSession(ctx.req.headers);
+  const session = await getSession(ctx.request.headers);
   session.flash("message", "Field group saved");
 
   throw redirect(`/admin/field-groups/edit?id=${id}`, {
@@ -51,9 +51,9 @@ export async function action(ctx: Context) {
 }
 
 export async function loader(ctx: Context) {
-  const fieldTypes = await appRouterCaller.getFieldTypes();
-  const id = new URL(ctx.req.url).searchParams.get("id");
-  const postTypes = await appRouterCaller.getPostTypes();
+  const fieldTypes = await appRouterCaller(ctx).getFieldTypes();
+  const id = new URL(ctx.request.url).searchParams.get("id");
+  const postTypes = await appRouterCaller(ctx).getPostTypes();
 
   if (!id) return json({
     fieldTypes: fieldTypes,
@@ -62,9 +62,9 @@ export async function loader(ctx: Context) {
     message: null
   })
 
-  const fieldGroup = await appRouterCaller.getFieldGroup({ id: parseInt(id) });
+  const fieldGroup = await appRouterCaller(ctx).getFieldGroup({ id: parseInt(id) });
 
-  const session = await getSession(ctx.req.headers);
+  const session = await getSession(ctx.request.headers);
   const message = session.get("message") as string | null;
 
   return json({

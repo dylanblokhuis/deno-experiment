@@ -45,6 +45,10 @@ export function loader(context: Context) {
     pathname: "/admin/field-groups",
     name: "Field Groups"
   })
+  admin.addMenuItem({
+    pathname: "/admin/users",
+    name: "Users"
+  })
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {

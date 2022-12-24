@@ -45,7 +45,8 @@ export const userRouter = router({
       role: z.enum(["admin", "editor", "subscriber"]),
     }))
     .mutation(async ({ input }) => {
-      const exists = await db.selectFrom("user").select(['id', 'email'])
+      const exists = await db.selectFrom("user")
+        .select(['id', 'email'])
         .where('email', '=', input.email)
         .executeTakeFirst();
 
@@ -80,5 +81,33 @@ export const userRouter = router({
         throw new Error("User not found");
       }
       return user;
+    }),
+  getUsers: procedure.role("admin")
+    .query(async () => {
+      const users = await db.selectFrom("user").select(["id", "email", "name", "role"]).execute();
+      return users;
+    }),
+  login: procedure.public
+    .input(z.object({
+      email: z.string().email(),
+      password: z.string().min(8),
+    }))
+    .query(async ({ input }) => {
+      const user = await db.selectFrom("user").select(["id", "email", "name", "role", "password"]).where('email', '=', input.email).executeTakeFirst();
+      if (!user) {
+        throw new Error("Invalid email or password");
+      }
+
+      const validPassword = await bcrypt.compare(input.password, user.password);
+      if (!validPassword) {
+        throw new Error("Invalid email or password");
+      }
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      };
     })
 })

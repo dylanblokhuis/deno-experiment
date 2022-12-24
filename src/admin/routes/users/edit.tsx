@@ -14,7 +14,7 @@ const schema = (update: boolean) => z.object({
   id: z.number().optional(),
   name: z.string().min(1),
   email: z.string().email(),
-  password: update ? z.string().optional() : z.string().min(1),
+  password: update ? z.string().optional() : z.string().min(8),
   role: z.enum(["admin", "editor", "subscriber"])
 });
 

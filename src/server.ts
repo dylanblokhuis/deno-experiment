@@ -1,7 +1,8 @@
 // deno-lint-ignore-file no-explicit-any
 import { RegExpRouter, SmartRouter, StaticRouter, TrieRouter } from 'https://deno.land/x/hono@v2.5.2/mod.ts'
 import { getPathFromURL } from 'https://deno.land/x/hono@v2.5.2/utils/url.ts'
-
+import { TRPCError } from '@trpc/server'
+import { getHTTPStatusCodeFromError } from "@trpc/server/http"
 type ContextVariables = Record<string, any>
 type HandlerReturn = Response | void | undefined
 export type Handler<C extends ContextVariables = ContextVariables, T = Context<C>> = (ctx: T) => HandlerReturn | Promise<HandlerReturn>
@@ -51,8 +52,15 @@ export class Server<V extends ContextVariables> {
 
     const ctx = new Context<V>(request);
     for (const routeHandler of route.handlers) {
-      const res = await routeHandler(ctx)
-      if (res) return res
+      try {
+        const res = await routeHandler(ctx)
+        if (res) return res
+      } catch (error) {
+        if (error instanceof Response) return error
+        if (error instanceof TRPCError) return new Response(error.message, { status: getHTTPStatusCodeFromError(error) });
+        console.error("Uncaught error inside handler occured", error)
+        return new Response(error.message, { status: 500 })
+      }
     }
 
     return new Response("Not Found", { status: 404 })

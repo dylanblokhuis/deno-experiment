@@ -9,12 +9,8 @@ import { userRouter } from './routers/user.ts';
 export const appRouter = mergeRouters(fieldGroupRouter, postRouter, settingsRouter, userRouter);
 
 export const appRouterCaller = (ctx: Context) => {
-  const session = ctx.get("session")
-
-  // console.log("session", session);
-
   return appRouter.createCaller({
-    session: session
-  });
+    ctx
+  })
 }
 export type AppRouter = typeof appRouter;

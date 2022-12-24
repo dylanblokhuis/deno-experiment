@@ -4,7 +4,8 @@
     "paths": {
       "$lib": ["./src/lib.tsx"],
       "$lib/*": ["./src/lib/*"],
-      "$db.server": ["./src/db/db.server.ts"]
+      "$db.server": ["./src/db/db.server.ts"],
+      "$admin/components/*": ["./src/admin/components/*"]
     }
   }
 }

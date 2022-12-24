@@ -1,9 +1,9 @@
 import React from 'react'
 import { Context, useLoaderData } from '$lib'
-import { appRouter } from '../../../api/router.server.ts';
+import { appRouterCaller } from '../../../api/router.server.ts';
 
 export async function loader(ctx: Context) {
-  return await appRouter.createCaller({}).getFieldGroups();
+  return await appRouterCaller(ctx).getFieldGroups();
 }
 
 export default function Fields() {

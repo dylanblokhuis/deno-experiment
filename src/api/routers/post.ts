@@ -56,7 +56,7 @@ export const postRouter = router({
         })),
       };
     }),
-  createOrUpdatePost: procedure.public.input(
+  createOrUpdatePost: procedure.role("editor").input(
     z.object({
       id: z.number().optional(),
       title: z.string(),

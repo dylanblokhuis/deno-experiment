@@ -165,6 +165,9 @@ function createSession(initialData: Record<string, any> = {}) {
     set(key: string, value: any) {
       map.set(key, value)
     },
+    delete(key: string) {
+      map.delete(key)
+    },
     flash(key: string, value: any) {
       map.set(`${flashPrefix}${key}`, value)
     },

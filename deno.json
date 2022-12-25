@@ -4,6 +4,21 @@
     "dev": "deno run --watch=src --node-modules-dir --allow-ffi --unstable --allow-net --allow-env --allow-run --allow-read ./src/main.tsx",
     "start": "deno run --node-modules-dir --allow-net --allow-env --allow-run --allow-read ./main.tsx"
   },
+  "fmt": {
+    "files": {
+      "include": [
+        "src/",
+        "templates/"
+      ]
+    },
+    "options": {
+      "useTabs": false,
+      "lineWidth": 80,
+      "indentWidth": 2,
+      "singleQuote": false,
+      "proseWrap": "preserve"
+    }
+  },
   "compilerOptions": {
     "lib": [
       "dom",

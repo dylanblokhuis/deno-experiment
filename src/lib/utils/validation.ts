@@ -2,19 +2,21 @@
 import { pathOr } from "remeda";
 
 export const stringToPathArray = <T extends string>(
-  path: T
+  path: T,
 ): (string | number)[] => {
   if (path.length === 0) return [];
 
-  const match =
-    path.match(/^\[(.+?)\](.*)$/) || path.match(/^\.?([^\.\[\]]+)(.*)$/);
+  const match = path.match(/^\[(.+?)\](.*)$/) ||
+    path.match(/^\.?([^\.\[\]]+)(.*)$/);
   if (match) {
     const [_, key, rest] = match;
-    return [/^\d+$/.test(key) ? Number(key) : key, ...stringToPathArray(rest)];
+    return [
+      /^\d+$/.test(key) ? Number(key) : key,
+      ...stringToPathArray(rest),
+    ];
   }
   return [path];
 };
-
 
 function setPath<T>(object: T, path: string, defaultValue: any) {
   return _setPathNormalized(object, stringToPathArray(path), defaultValue);
@@ -23,7 +25,7 @@ function setPath<T>(object: T, path: string, defaultValue: any) {
 function _setPathNormalized(
   object: any,
   path: (string | number)[],
-  value: any
+  value: any,
 ): any {
   const leadingSegments = path.slice(0, -1);
   const lastSegment = path[path.length - 1];
@@ -44,7 +46,9 @@ function _setPathNormalized(
 export function formDataToObject(formData: FormData | Record<string, any>) {
   const map: Map<string, unknown[]> = new Map();
   for (const [key, value] of formData.entries()) {
-    const realValue = value ? !isNaN(value) ? parseInt(value) : value : String(value)
+    const realValue = value
+      ? !isNaN(value) ? parseInt(value) : value
+      : String(value);
     if (map.has(key)) {
       map.get(key)!.push(realValue);
     } else {
@@ -64,6 +68,7 @@ export const getPath = (object: any, path: string) =>
 export function pathToString(array: (string | number)[]): string {
   return array.reduce(function (string: string, item: string | number) {
     const prefix = string === "" ? "" : ".";
-    return string + (isNaN(Number(item)) ? prefix + item : "[" + item + "]");
+    return string +
+      (isNaN(Number(item)) ? prefix + item : "[" + item + "]");
   }, "");
 }

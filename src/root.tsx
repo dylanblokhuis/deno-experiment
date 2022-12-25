@@ -1,7 +1,9 @@
-import React from 'react'
-import { LiveReload, Scripts, useApp } from './lib.tsx';
+import React from "react";
+import { LiveReload, Scripts, useApp } from "./lib.tsx";
 
-export default function Root({ children, head }: { children: React.ReactNode, head: React.ReactNode }) {
+export default function Root(
+  { children, head }: { children: React.ReactNode; head: React.ReactNode },
+) {
   const app = useApp();
 
   return (
@@ -17,5 +19,5 @@ export default function Root({ children, head }: { children: React.ReactNode, he
         <LiveReload />
       </body>
     </html>
-  )
+  );
 }

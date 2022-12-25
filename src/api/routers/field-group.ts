@@ -1,5 +1,5 @@
-import { z } from "zod"
-import { router, procedure } from '../trpc.server.ts';
+import { z } from "zod";
+import { procedure, router } from "../trpc.server.ts";
 import db from "$db.server";
 
 export const fieldGroupRouter = router({
@@ -9,15 +9,16 @@ export const fieldGroupRouter = router({
       name: z.string(),
     })))
     .query(async () => {
-      const data = await db.selectFrom("field_type").selectAll().execute();
+      const data = await db.selectFrom("field_type").selectAll()
+        .execute();
       return data;
     }),
 
   getFieldGroups: procedure.role("editor")
     .input(
       z.object({
-        postTypeId: z.number().optional()
-      }).optional()
+        postTypeId: z.number().optional(),
+      }).optional(),
     )
     .output(
       z
@@ -30,38 +31,49 @@ export const fieldGroupRouter = router({
             name: z.string(),
             slug: z.string(),
             type_id: z.number(),
-          }))
-        }))
+          })),
+        })),
     )
     .query(async ({ input }) => {
       let groups;
       let connectedPostTypeIds: number[] = [];
       if (input?.postTypeId) {
-        const connectedPostTypes = await db.selectFrom("field_group_on_post_type")
+        const connectedPostTypes = await db.selectFrom(
+          "field_group_on_post_type",
+        )
           .selectAll()
-          .where("post_type_id", '=', input.postTypeId)
+          .where("post_type_id", "=", input.postTypeId)
           .execute();
-        connectedPostTypeIds = connectedPostTypes.map(it => it.post_type_id);
-        groups = await db.selectFrom("field_group").selectAll().where('id', 'in', connectedPostTypes.map(it => it.field_group_id)).execute();
+        connectedPostTypeIds = connectedPostTypes.map((it) => it.post_type_id);
+        groups = await db.selectFrom("field_group").selectAll().where(
+          "id",
+          "in",
+          connectedPostTypes.map((it) => it.field_group_id),
+        ).execute();
       } else {
-        groups = await db.selectFrom("field_group").selectAll().execute();
+        groups = await db.selectFrom("field_group").selectAll()
+          .execute();
       }
 
-      const fields = await db.selectFrom("field").selectAll().where('field_group_id', 'in', groups.map(it => it.id)).execute();
-      return groups.map(group => {
+      const fields = await db.selectFrom("field").selectAll().where(
+        "field_group_id",
+        "in",
+        groups.map((it) => it.id),
+      ).execute();
+      return groups.map((group) => {
         return {
           id: group.id,
           name: group.name,
           connectedPostTypes: connectedPostTypeIds,
-          fields: fields.filter(it => it.field_group_id === group.id)
-        }
+          fields: fields.filter((it) => it.field_group_id === group.id),
+        };
       });
     }),
   getFieldGroup: procedure.role("editor")
     .input(
       z.object({
-        id: z.number()
-      })
+        id: z.number(),
+      }),
     )
     .output(
       z
@@ -74,25 +86,27 @@ export const fieldGroupRouter = router({
             name: z.string(),
             slug: z.string(),
             type_id: z.number(),
-          }))
-        }).nullable()
+          })),
+        }).nullable(),
     )
     .query(async ({ input }) => {
       const fieldGroupId = input.id;
 
       const fieldGroup = await db.selectFrom("field_group")
         .selectAll()
-        .where("field_group.id", '=', fieldGroupId)
+        .where("field_group.id", "=", fieldGroupId)
         .executeTakeFirst();
 
       if (!fieldGroup) return null;
 
       const fields = await db.selectFrom("field")
         .selectAll()
-        .where("field_group_id", '=', fieldGroupId)
+        .where("field_group_id", "=", fieldGroupId)
         .execute();
 
-      const connectedPostTypes = await db.selectFrom("field_group_on_post_type").where("field_group_id", "=", fieldGroupId).selectAll().execute();
+      const connectedPostTypes = await db.selectFrom(
+        "field_group_on_post_type",
+      ).where("field_group_id", "=", fieldGroupId).selectAll().execute();
 
       return {
         id: fieldGroup.id,
@@ -118,8 +132,8 @@ export const fieldGroupRouter = router({
             name: z.string(),
             slug: z.string(),
             type_id: z.number(),
-          }))
-        })
+          })),
+        }),
     ).mutation(async ({ input }) => {
       let id = input.id;
 
@@ -130,7 +144,8 @@ export const fieldGroupRouter = router({
 
         for (const field of input.fields) {
           if (field.id) {
-            await db.updateTable("field").where("id", "=", field.id).set(field).execute();
+            await db.updateTable("field").where("id", "=", field.id)
+              .set(field).execute();
           } else {
             await db.insertInto("field").values({
               ...field,
@@ -161,7 +176,7 @@ export const fieldGroupRouter = router({
         await db.insertInto("field_group_on_post_type").values({
           field_group_id: id,
           post_type_id: postTypeId,
-        }).executeTakeFirst()
+        }).executeTakeFirst();
       }
 
       return { id };
@@ -170,9 +185,13 @@ export const fieldGroupRouter = router({
     .input(
       z.object({
         id: z.number(),
-      })
+      }),
     ).mutation(async ({ input }) => {
-      const res = await db.deleteFrom("field_group").where("id", "=", input.id).executeTakeFirst();
+      const res = await db.deleteFrom("field_group").where(
+        "id",
+        "=",
+        input.id,
+      ).executeTakeFirst();
       return res;
     }),
 });

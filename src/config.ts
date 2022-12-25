@@ -5,8 +5,8 @@ const config: Config = {
   livereloadWsPort: 8282,
   admin: {
     email: "info@example.org",
-    password: "password"
-  }
-}
+    password: "password",
+  },
+};
 
-export default config
+export default config;

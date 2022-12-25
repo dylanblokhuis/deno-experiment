@@ -1,5 +1,5 @@
-import { z } from "zod"
-import { router, procedure } from '../trpc.server.ts';
+import { z } from "zod";
+import { procedure, router } from "../trpc.server.ts";
 import db from "$db.server";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
@@ -12,7 +12,11 @@ export const userRouter = router({
       role: z.enum(["admin", "editor", "subscriber"]),
     }))
     .mutation(async ({ input }) => {
-      const exists = await db.selectFrom("user").select(['email']).where('email', '=', input.email).executeTakeFirst();
+      const exists = await db.selectFrom("user").select(["email"]).where(
+        "email",
+        "=",
+        input.email,
+      ).executeTakeFirst();
       if (exists) {
         throw new Error("User already exists with this email");
       }
@@ -46,22 +50,29 @@ export const userRouter = router({
     }))
     .mutation(async ({ input }) => {
       const exists = await db.selectFrom("user")
-        .select(['id', 'email'])
-        .where('email', '=', input.email)
+        .select(["id", "email"])
+        .where("email", "=", input.email)
         .executeTakeFirst();
 
       if (exists && exists.id !== input.id) {
-        throw new Error("A user already exists with this email, so you can't update this user with this email");
+        throw new Error(
+          "A user already exists with this email, so you can't update this user with this email",
+        );
       }
 
       const user = await db.updateTable("user")
         .set({
           name: input.name,
           email: input.email,
-          password: input.password ? await bcrypt.hash(input.password, await bcrypt.genSalt(10)) : undefined,
+          password: input.password
+            ? await bcrypt.hash(
+              input.password,
+              await bcrypt.genSalt(10),
+            )
+            : undefined,
           role: input.role,
         })
-        .where('id', '=', input.id)
+        .where("id", "=", input.id)
         .returning("id")
         .executeTakeFirst();
 
@@ -76,7 +87,12 @@ export const userRouter = router({
       id: z.number(),
     }))
     .query(async ({ input }) => {
-      const user = await db.selectFrom("user").select(["id", "email", "name", "role"]).where('id', '=', input.id).executeTakeFirst();
+      const user = await db.selectFrom("user").select([
+        "id",
+        "email",
+        "name",
+        "role",
+      ]).where("id", "=", input.id).executeTakeFirst();
       if (!user) {
         throw new Error("User not found");
       }
@@ -84,7 +100,12 @@ export const userRouter = router({
     }),
   getUsers: procedure.role("admin")
     .query(async () => {
-      const users = await db.selectFrom("user").select(["id", "email", "name", "role"]).execute();
+      const users = await db.selectFrom("user").select([
+        "id",
+        "email",
+        "name",
+        "role",
+      ]).execute();
       return users;
     }),
   login: procedure.public
@@ -93,12 +114,21 @@ export const userRouter = router({
       password: z.string().min(1),
     }))
     .query(async ({ input }) => {
-      const user = await db.selectFrom("user").select(["id", "email", "name", "role", "password"]).where('email', '=', input.email).executeTakeFirst();
+      const user = await db.selectFrom("user").select([
+        "id",
+        "email",
+        "name",
+        "role",
+        "password",
+      ]).where("email", "=", input.email).executeTakeFirst();
       if (!user) {
         throw new Error("Invalid email or password");
       }
 
-      const validPassword = await bcrypt.compare(input.password, user.password);
+      const validPassword = await bcrypt.compare(
+        input.password,
+        user.password,
+      );
       if (!validPassword) {
         throw new Error("Invalid email or password");
       }
@@ -109,5 +139,5 @@ export const userRouter = router({
         name: user.name,
         role: user.role,
       };
-    })
-})
+    }),
+});

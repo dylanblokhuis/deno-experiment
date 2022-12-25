@@ -3,11 +3,11 @@ import db from "../db/db.server.ts";
 import { Context } from "../lib.tsx";
 import { runtimeRoutes } from "../routes.tsx";
 
-export { getSession, commitSession } from "./session.server.ts"
+export { commitSession, getSession } from "./session.server.ts";
 
 export type RedirectFunction = (
   url: string,
-  init?: number | ResponseInit
+  init?: number | ResponseInit,
 ) => TypedResponse<never>;
 
 export const redirect: RedirectFunction = (url, init = 302) => {
@@ -27,16 +27,18 @@ export const redirect: RedirectFunction = (url, init = 302) => {
   }) as TypedResponse<never>;
 };
 
-export type TypedResponse<T extends unknown = unknown> = Omit<
-  Response,
-  "json"
-> & {
-  json(): Promise<T>;
-};
+export type TypedResponse<T extends unknown = unknown> =
+  & Omit<
+    Response,
+    "json"
+  >
+  & {
+    json(): Promise<T>;
+  };
 
 export type JsonFunction = <Data extends unknown>(
   data: Data,
-  init?: number | ResponseInit
+  init?: number | ResponseInit,
 ) => TypedResponse<Data>;
 
 export const json: JsonFunction = (data, init = {}) => {
@@ -51,11 +53,11 @@ export const json: JsonFunction = (data, init = {}) => {
     ...responseInit,
     headers,
   });
-}
+};
 
 export class Post {
   private id: number;
-  private ctx: Context
+  private ctx: Context;
   constructor(ctx: Context, id: number) {
     this.ctx = ctx;
     this.id = id;
@@ -71,13 +73,23 @@ export async function generateRuntimeRoutes() {
   const posts = await db
     .selectFrom("post")
     .innerJoin("post_type", "post_type.id", "post_type_id")
-    .select(["post.id", "post.slug", "post_type.path_prefix", "post_type.slug as post_type_slug"])
+    .select([
+      "post.id",
+      "post.slug",
+      "post_type.path_prefix",
+      "post_type.slug as post_type_slug",
+    ])
     .execute();
 
   runtimeRoutes.clear();
   for (const post of posts) {
-    const route = post.path_prefix ? `${post.path_prefix}/${post.slug}` : `/${post.slug}`;
-    runtimeRoutes.set(route, [post.id, `../templates/${post.post_type_slug}.tsx`]);
+    const route = post.path_prefix
+      ? `${post.path_prefix}/${post.slug}`
+      : `/${post.slug}`;
+    runtimeRoutes.set(route, [
+      post.id,
+      `../templates/${post.post_type_slug}.tsx`,
+    ]);
   }
 }
 

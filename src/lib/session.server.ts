@@ -1,7 +1,11 @@
-import { setCookie, getCookies, Cookie } from "https://deno.land/std@0.168.0/http/cookie.ts";
+import {
+  Cookie,
+  getCookies,
+  setCookie,
+} from "https://deno.land/std@0.168.0/http/cookie.ts";
 
 interface CookieFactoryOptions extends Omit<Cookie, "value"> {
-  secret: string
+  secret: string;
   // secure: boolean
   // maxAge: number
   // expires: Date
@@ -19,16 +23,23 @@ async function createCookieFactory(options: CookieFactoryOptions) {
 
   return {
     get name() {
-      return options.name
+      return options.name;
     },
     async serialize<T = Record<string, any>>(value: T) {
-      const encoded = btoa(myUnescape(encodeURIComponent(JSON.stringify(value))));
-
-      const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(encoded));
-      const hash = btoa(String.fromCharCode(...new Uint8Array(signature))).replace(
-        /=+$/,
-        "",
+      const encoded = btoa(
+        myUnescape(encodeURIComponent(JSON.stringify(value))),
       );
+
+      const signature = await crypto.subtle.sign(
+        "HMAC",
+        key,
+        encoder.encode(encoded),
+      );
+      const hash = btoa(String.fromCharCode(...new Uint8Array(signature)))
+        .replace(
+          /=+$/,
+          "",
+        );
       const finalEncode = encoded + "." + hash;
 
       const headers = new Headers();
@@ -39,10 +50,12 @@ async function createCookieFactory(options: CookieFactoryOptions) {
         sameSite: options.sameSite,
         httpOnly: options.httpOnly,
       };
-      setCookie(headers, cookie)
+      setCookie(headers, cookie);
       return headers.get("set-cookie") as string;
     },
-    async parse<T = Record<string, any>>(headers: Headers): Promise<T | false> {
+    async parse<T = Record<string, any>>(
+      headers: Headers,
+    ): Promise<T | false> {
       const cookies = getCookies(headers);
       const cookie = cookies[options.name];
 
@@ -53,11 +66,16 @@ async function createCookieFactory(options: CookieFactoryOptions) {
 
       const data = encoder.encode(value);
       const signature = byteStringToUint8Array(atob(hash));
-      const valid = await crypto.subtle.verify("HMAC", key, signature, data);
+      const valid = await crypto.subtle.verify(
+        "HMAC",
+        key,
+        signature,
+        data,
+      );
 
       return valid ? decodeData(value) : false;
-    }
-  }
+    },
+  };
 }
 
 function decodeData(value: string): any {
@@ -124,7 +142,6 @@ function hex(code: number, length: number): string {
   return result;
 }
 
-
 function byteStringToUint8Array(byteString: string): Uint8Array {
   const array = new Uint8Array(byteString.length);
 
@@ -141,19 +158,18 @@ const cookieFactory = await createCookieFactory({
   secret: "sdkfjsldfd",
   sameSite: "Lax",
   httpOnly: true,
-})
+});
 
-
-type Session = ReturnType<typeof createSession>
+type Session = ReturnType<typeof createSession>;
 function createSession(initialData: Record<string, any> = {}) {
-  const map = new Map<string, any>(Object.entries(initialData))
-  const flashPrefix = "__flash_"
+  const map = new Map<string, any>(Object.entries(initialData));
+  const flashPrefix = "__flash_";
 
   return {
     get(key: string) {
       if (map.has(key)) return map.get(key);
 
-      const flashKey = `${flashPrefix}${key}`
+      const flashKey = `${flashPrefix}${key}`;
       if (map.has(flashKey)) {
         const value = map.get(flashKey);
         map.delete(flashKey);
@@ -163,23 +179,23 @@ function createSession(initialData: Record<string, any> = {}) {
       return undefined;
     },
     set(key: string, value: any) {
-      map.set(key, value)
+      map.set(key, value);
     },
     delete(key: string) {
-      map.delete(key)
+      map.delete(key);
     },
     flash(key: string, value: any) {
-      map.set(`${flashPrefix}${key}`, value)
+      map.set(`${flashPrefix}${key}`, value);
     },
     data() {
-      return Object.fromEntries(map)
-    }
-  }
+      return Object.fromEntries(map);
+    },
+  };
 }
 
 export async function getSession(headers: Headers) {
-  const data = await cookieFactory.parse(headers)
-  return createSession(data || {})
+  const data = await cookieFactory.parse(headers);
+  return createSession(data || {});
 }
 
 export async function commitSession(session: Session) {

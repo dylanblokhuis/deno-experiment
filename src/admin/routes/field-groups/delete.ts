@@ -7,13 +7,13 @@ export async function action(ctx: Context) {
 
   if (!id) {
     return json("No id provided", {
-      status: 400
+      status: 400,
     });
   }
 
   await appRouter.createCaller({}).deleteFieldGroup({
-    id: parseInt(id)
-  })
+    id: parseInt(id),
+  });
 
   return redirect("/admin/field-groups");
 }

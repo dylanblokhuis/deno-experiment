@@ -1,7 +1,7 @@
 // this is just so a node_modules folder gets created with react in it
 // why? https://github.com/denoland/deno/issues/16653
-import type {} from "npm:react@18";
-import type {} from "npm:react-dom@18";
+import type { } from "npm:react@18";
+import type { } from "npm:react-dom@18";
 
 import config from "./config.ts";
 import { serve } from "https://deno.land/std@0.165.0/http/server.ts";
@@ -9,7 +9,7 @@ import {
   serveDir,
   serveFile,
 } from "https://deno.land/std@0.165.0/http/file_server.ts";
-import * as esbuild from "https://deno.land/x/esbuild@v0.14.51/mod.js";
+import * as esbuild from "https://deno.land/x/esbuild@v0.16.10/mod.js";
 import * as path from "https://deno.land/std@0.165.0/path/mod.ts";
 import {
   App,

@@ -11,6 +11,7 @@ import { titleToSlug } from '$lib/utils/slugify.ts';
 import FieldError from '../../components/form/internal/FieldError.tsx';
 import { clsx } from "clsx"
 import Alert from '../../components/Alert.tsx';
+import { zfd } from "$lib/forms.tsx"
 
 const fieldKey = (fieldId: number) => `field_${fieldId}`
 
@@ -22,7 +23,15 @@ const schema = (fieldGroups: FieldGroup[], fieldTypes: FieldType[]) => {
 
       let shape;
       if (field.type_id === 1) {
-        shape = z.string().min(1);
+        shape = zfd.text()
+      } else if (field.type_id === 2) {
+        shape = zfd.numeric();
+      } else if (field.type_id === 3) {
+        shape = zfd.text(z.preprocess((arg) => {
+          if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
+        }, z.date()));
+      } else if (field.type_id === 4) {
+        shape = zfd.checkbox();
       }
 
       if (!shape) throw new Error("Field type not found");
@@ -31,10 +40,10 @@ const schema = (fieldGroups: FieldGroup[], fieldTypes: FieldType[]) => {
     }
   }
 
-  return z.object({
-    title: z.string().min(1),
-    status: z.enum(["draft", "trash", "published"]),
-    slug: z.string().min(1),
+  return zfd.formData({
+    title: zfd.text(),
+    status: zfd.text(z.enum(["draft", "trash", "published"])),
+    slug: zfd.text(),
     ...objectTypes
   });
 }
@@ -51,7 +60,7 @@ export async function action(ctx: Context) {
 
     fields.push({
       id: parseInt(key.split("_")[1]),
-      value: value
+      value: JSON.stringify(value)
     })
   }
 
@@ -81,8 +90,6 @@ export async function action(ctx: Context) {
   } catch (error) {
     session.flash("error", error.message);
 
-    console.log(error.message);
-
     return json({
       values
     }, {
@@ -108,7 +115,6 @@ export async function loader(ctx: Context) {
     if (!maybePost) throw redirect("/admin/posts?postType=" + postType.slug);
     post = maybePost;
   }
-
 
   const session = await getSession(ctx.request.headers);
   const message = session.get("message") as string | undefined;
@@ -142,7 +148,7 @@ export default function Edit() {
   }
 
   const fieldsMapped = post?.fields.reduce((acc, field) => {
-    acc[fieldKey(field.id)] = field.value;
+    acc[fieldKey(field.id)] = JSON.parse(field.value);
     return acc;
   }, {} as Record<string, string>)
 
@@ -267,6 +273,8 @@ function SlugEditor({ postType }: { postType: SerializeFrom<typeof loader>["post
 type PostFieldProps = { field: Field, fieldType: FieldType };
 function PostField(props: PostFieldProps) {
   if (props.fieldType.id === 1) return <TextField {...props} />
+  if (props.fieldType.id === 2) return <NumberField {...props} />
+  if (props.fieldType.id === 3) return <DateField {...props} />
   return <div>This field type is unsupported</div>
 }
 
@@ -277,4 +285,21 @@ function TextField({ field, fieldType }: PostFieldProps) {
     </div>
   )
 }
+
+function NumberField({ field, fieldType }: PostFieldProps) {
+  return (
+    <div data-id={`${field.name} - ${fieldType.name} - ${fieldType.id}`}>
+      <Input type="number" name={fieldKey(field.id)} label={field.name} />
+    </div>
+  )
+}
+
+function DateField({ field, fieldType }: PostFieldProps) {
+  return (
+    <div data-id={`${field.name} - ${fieldType.name} - ${fieldType.id}`}>
+      <Input type="date" name={fieldKey(field.id)} label={field.name} />
+    </div>
+  )
+}
+
 

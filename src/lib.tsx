@@ -206,6 +206,10 @@ export type Route = [string, Module] | [string, Handler | Handler[], Module]
 export interface Config {
   mode: "development" | "production",
   livereloadWsPort: number,
+  admin: {
+    email: string,
+    password: string
+  }
 }
 
 export const LiveReload =

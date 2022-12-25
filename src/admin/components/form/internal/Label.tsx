@@ -13,7 +13,7 @@ export default function Label({ text, type, hidePassword, toggleHidePassword }: 
       <span>{text}</span>
 
       {type === 'password' && toggleHidePassword && (
-        <button className='ml-2' type='button' onClick={() => toggleHidePassword()}>
+        <button tabIndex={100} className='ml-2' type='button' onClick={() => toggleHidePassword()}>
           {hidePassword ? (
             <svg
               xmlns="http://www.w3.org/2000/svg"

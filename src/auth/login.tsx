@@ -10,7 +10,7 @@ import { useLoaderData } from '../lib.tsx'
 
 const schema = z.object({
   email: z.string().email(),
-  password: z.string().min(8)
+  password: z.string().min(1)
 })
 
 export async function action(ctx: Context) {

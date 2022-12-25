@@ -12,6 +12,7 @@
     "kysely": "npm:kysely",
     "clsx": "npm:clsx",
     "remeda": "npm:remeda@1.3.0",
+    "zod-form-data": "npm:zod-form-data@1.2.4/dist/zod-form-data.cjs.js",
     "$lib": "./src/lib.tsx",
     "$lib/": "./src/lib/",
     "$db.server": "./src/db/db.server.ts",

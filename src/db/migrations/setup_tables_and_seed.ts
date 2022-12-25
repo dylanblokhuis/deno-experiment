@@ -1,5 +1,7 @@
 import { Kysely, sql } from 'kysely'
 import { Database } from "../db.server.ts"
+import config from '../../config.ts'
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 export async function up(db: Kysely<Database>): Promise<void> {
   await db.schema
@@ -86,6 +88,19 @@ export async function up(db: Kysely<Database>): Promise<void> {
       path_prefix: item === "Post" ? "/posts" : null
     }).execute();
   }
+
+  const salt = await bcrypt.genSalt(10);
+  const hash = await bcrypt.hash(config.admin.password, salt);
+
+  await db.insertInto("user")
+    .values({
+      name: "admin",
+      email: config.admin.email,
+      password: hash,
+      role: "admin",
+    })
+    .returning("id")
+    .executeTakeFirst();
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {

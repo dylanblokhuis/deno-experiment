@@ -10,7 +10,11 @@ body.admin {
   @apply w-full h-full;
 }
 
-body.admin input[type=text], body.admin input[type=email], body.admin input[type=password] {
+body.admin input[type=text],
+body.admin input[type=email], 
+body.admin input[type=number],
+body.admin input[type=date],
+body.admin input[type=password] {
     @apply border rounded px-2 py-2 
 }
 

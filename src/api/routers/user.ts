@@ -90,7 +90,7 @@ export const userRouter = router({
   login: procedure.public
     .input(z.object({
       email: z.string().email(),
-      password: z.string().min(8),
+      password: z.string().min(1),
     }))
     .query(async ({ input }) => {
       const user = await db.selectFrom("user").select(["id", "email", "name", "role", "password"]).where('email', '=', input.email).executeTakeFirst();

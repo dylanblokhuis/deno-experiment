@@ -4,6 +4,10 @@ import { formDataToObject, getPath, pathToString } from "$lib/utils/validation.t
 import { z } from "zod";
 import { useActionData } from "../lib.tsx";
 
+// rexporting this, because types don't work with deno
+// @deno-types="npm:zod-form-data"
+export { zfd } from "zod-form-data"
+
 interface FormContextValues {
   isSubmitting: boolean
   touched: Record<string, boolean>,
@@ -105,19 +109,15 @@ export function validate<T, U extends z.ZodTypeDef>(schema: z.Schema<T, U, unkno
       values: obj as T,
     }
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      const errors: Record<string, string> = {};
-      for (const issue of error.issues) {
-        const path = pathToString(issue.path);
-        if (!errors[path]) errors[path] = issue.message;
-      }
-
-      return {
-        errors,
-        values: obj as T,
-      }
+    const errors: Record<string, string> = {};
+    for (const issue of error.issues) {
+      const path = pathToString(issue.path);
+      if (!errors[path]) errors[path] = issue.message;
     }
 
-    throw new Error(error)
+    return {
+      errors,
+      values: obj as T,
+    }
   }
 }

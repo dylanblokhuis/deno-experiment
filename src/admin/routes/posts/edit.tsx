@@ -13,6 +13,7 @@ import { clsx } from "clsx";
 import Alert from "../../components/Alert.tsx";
 import { zfd } from "$lib/forms.tsx";
 import Checkbox from "../../components/form/Checkbox.tsx";
+import WYSIWYG from "../../components/form/WYSIWYG.tsx";
 
 const fieldKey = (fieldId: number) => `field_${fieldId}`;
 
@@ -345,9 +346,10 @@ function SlugEditor(
 type PostFieldProps = { field: Field; fieldType: FieldType };
 function PostField(props: PostFieldProps) {
   if (props.fieldType.id === 1) return <TextField {...props} />;
-  if (props.fieldType.id === 2) return <NumberField {...props} />;
-  if (props.fieldType.id === 3) return <DateField {...props} />;
-  if (props.fieldType.id === 4) return <BooleanField {...props} />;
+  if (props.fieldType.id === 2) return <WYSIWYGField {...props} />;
+  if (props.fieldType.id === 3) return <NumberField {...props} />;
+  if (props.fieldType.id === 4) return <DateField {...props} />;
+  if (props.fieldType.id === 5) return <BooleanField {...props} />;
   return <div>This field type is unsupported</div>;
 }
 
@@ -355,6 +357,14 @@ function TextField({ field, fieldType }: PostFieldProps) {
   return (
     <div data-id={`${field.name} - ${fieldType.name} - ${fieldType.id}`}>
       <Input type="text" name={fieldKey(field.id)} label={field.name} />
+    </div>
+  );
+}
+
+function WYSIWYGField({ field, fieldType }: PostFieldProps) {
+  return (
+    <div data-id={`${field.name} - ${fieldType.name} - ${fieldType.id}`}>
+      <WYSIWYG name={fieldKey(field.id)} label={field.name} />
     </div>
   );
 }

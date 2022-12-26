@@ -18,6 +18,10 @@ body.admin input[type=password] {
     @apply border rounded px-2 py-2 
 }
 
+body.admin [data-lexical-editor] {
+  @apply border rounded px-2 py-2;
+}
+
 body.admin select {
   @apply border rounded px-2 py-2 ;
 }

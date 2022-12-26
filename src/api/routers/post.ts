@@ -61,16 +61,22 @@ export const postRouter = router({
       ).executeTakeFirst();
       if (!post) return undefined;
 
-      const fields = await db.selectFrom("post_field").selectAll().where(
+      const fieldTypes = await db.selectFrom("field_type").selectAll().execute();
+      const fields = await db.selectFrom("post_field").where(
         "post_id",
         "=",
         input.id,
-      ).execute();
+      )
+        .innerJoin("field", "field.id", "field_id")
+        .select(["post_field.id", "post_field.value", "field.type_id"])
+        .execute();
+
       return {
         ...post,
         fields: fields.map((field) => ({
-          id: field.field_id,
+          id: field.id,
           value: field.value,
+          type: fieldTypes.find((type) => type.id === field.type_id),
         })),
       };
     }),

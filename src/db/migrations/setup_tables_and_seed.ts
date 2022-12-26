@@ -143,7 +143,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
     )
     .execute();
 
-  for (const item of ["Text", "Number", "Date", "Boolean"]) {
+  for (const item of ["Text", "WYSIWYG", "Number", "Date", "Boolean"]) {
     await db.insertInto("field_type").values({
       name: item,
     }).execute();

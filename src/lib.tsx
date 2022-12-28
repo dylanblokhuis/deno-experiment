@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any ban-types
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ModuleTree } from "./main.tsx";
 import config from "./config.ts";
 import type { Admin } from "./admin/layout/admin.tsx";
@@ -312,4 +312,29 @@ export function useApp(): App {
   const context = React.useContext(AppContext);
   if (!context) throw new Error("useApp used outside of AppContext");
   return context;
+}
+
+let hydrating = true;
+
+function useHydrated() {
+  let [hydrated, setHydrated] = useState(() => !hydrating);
+
+  useEffect(function hydrate() {
+    hydrating = false;
+    setHydrated(true);
+  }, []);
+
+  return hydrated;
+}
+
+export function ClientOnly({ children, fallback = null }: {
+  /**
+   * You are encouraged to add a fallback that is the same dimensions
+   * as the client rendered children. This will avoid content layout
+   * shift which is disgusting
+   */
+  children(): React.ReactNode;
+  fallback?: React.ReactNode;
+}) {
+  return useHydrated() ? <>{children()}</> : <>{fallback}</>;
 }

@@ -18,9 +18,9 @@ body.admin input[type=password] {
     @apply border rounded px-2 py-2 
 }
 
-body.admin [data-lexical-editor] {
+/* body.admin [data-lexical-editor] {
   @apply border rounded px-2 py-2;
-}
+} */
 
 body.admin select {
   @apply border rounded px-2 py-2 ;
@@ -29,3 +29,37 @@ body.admin select {
 body.admin .button {
   @apply rounded px-4 py-1 bg-blue-600 text-white shadow;
 }
+
+/* .wysiwyg__ul {
+  @apply pl-6 list-disc;
+}
+
+.wysiwyg__ol1 {
+  @apply pl-6 list-decimal;
+}
+
+.wysiwyg__textBold {
+  @apply font-bold;
+}
+
+.wysiwyg__textItalic {
+  @apply italic;
+}
+
+.wysiwyg__textUnderline {
+  @apply underline;
+}
+
+.wysiwyg__paragraph {
+  @apply mb-4;
+}
+
+.wysiwyg__h1 {
+  @apply text-2xl font-bold mb-2;
+}
+.wysiwyg__h2 {
+  @apply text-xl font-bold mb-2;
+}
+.wysiwyg__h3 {
+  @apply text-lg font-bold mb-2;
+} */

@@ -61,7 +61,8 @@ export const postRouter = router({
       ).executeTakeFirst();
       if (!post) return undefined;
 
-      const fieldTypes = await db.selectFrom("field_type").selectAll().execute();
+      const fieldTypes = await db.selectFrom("field_type").selectAll()
+        .execute();
       const fields = await db.selectFrom("post_field").where(
         "post_id",
         "=",

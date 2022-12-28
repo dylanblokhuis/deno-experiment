@@ -27,14 +27,16 @@ const schema = (fieldGroups: FieldGroup[], fieldTypes: FieldType[]) => {
       if (field.type_id === 1) {
         shape = zfd.text();
       } else if (field.type_id === 2) {
-        shape = zfd.numeric();
+        shape = zfd.text();
       } else if (field.type_id === 3) {
+        shape = zfd.numeric();
+      } else if (field.type_id === 4) {
         shape = zfd.text(z.preprocess((arg) => {
           if (typeof arg == "string" || arg instanceof Date) {
             return new Date(arg);
           }
         }, z.date()));
-      } else if (field.type_id === 4) {
+      } else if (field.type_id === 5) {
         shape = zfd.checkbox();
       }
 
@@ -389,7 +391,6 @@ function BooleanField({ field, fieldType }: PostFieldProps) {
   return (
     <div data-id={`${field.name} - ${fieldType.name} - ${fieldType.id}`}>
       <Checkbox name={fieldKey(field.id)} label={field.name} />
-      {/* <Input type="date" name={fieldKey(field.id)} label={field.name} /> */}
     </div>
   );
 }

@@ -56,6 +56,8 @@ import {
 } from "@lexical/list";
 import { $isLinkNode, LinkNode } from "@lexical/link";
 import { ClientOnly } from "$lib";
+
+// @deno-types="https://esm.sh/@headlessui/react@1.7.7"
 import { Menu, Transition } from "@headlessui/react";
 import {
   $createHeadingNode,
@@ -234,7 +236,7 @@ export default function WYSIWYG(
             <ToolbarPlugin />
             <RichTextPlugin
               contentEditable={
-                <ContentEditable className="outline-none rounded-t-none border-l border-b border-r rounded-bl rounded-br px-4 py-2 wysiwyg wysiwyg-sm" />
+                <ContentEditable className="outline-none rounded-t-none border-l border-b border-r rounded-bl rounded-br px-4 py-2 max-w-none wysiwyg" />
               }
               // placeholder={<div>Enter some text...</div>}
               ErrorBoundary={LexicalErrorBoundary}
@@ -242,7 +244,7 @@ export default function WYSIWYG(
             <HistoryPlugin />
             <ListPlugin />
             <LinkPlugin />
-            <WriteToInput name={props.name} />
+            <WriteToInput name={props.name} defaultValue={props.defaultValue} onBlur={props.onBlur} />
           </LexicalComposer>
         )}
       </ClientOnly>
@@ -252,24 +254,22 @@ export default function WYSIWYG(
   );
 }
 
-function WriteToInput({ name }: { name: string }) {
+function WriteToInput({ name, onBlur, defaultValue }: { name: string, onBlur: () => void, defaultValue: string }) {
   const [editor] = useLexicalComposerContext();
-  const { props } = useField(name);
-  const [html, setHtml] = useState<string>(props.defaultValue);
+  const [html, setHtml] = useState<string>(defaultValue || "");
 
   useEffect(() => {
     // @ts-expect-error - types dont work
     editor.registerUpdateListener(({ editorState }) => {
       editorState.read(() => {
-        props.onBlur();
         setHtml($generateHtmlFromNodes(editor));
       });
     });
 
     editor.update(() => {
-      if (!props.defaultValue) return;
+      if (!defaultValue) return;
       const parser = new DOMParser();
-      const dom = parser.parseFromString(props.defaultValue, "text/html");
+      const dom = parser.parseFromString(defaultValue, "text/html");
       const nodes = $generateNodesFromDOM(editor, dom);
 
       // Select the root
@@ -279,6 +279,10 @@ function WriteToInput({ name }: { name: string }) {
       $insertNodes(nodes);
     });
   }, []);
+
+  useEffect(() => {
+    if (html) onBlur()
+  }, [html])
 
   return <input type="hidden" name={name} value={html} />;
 }
@@ -539,27 +543,13 @@ function ToolbarPlugin() {
   useEffect(() => {
     return editor.registerCommand(
       SELECTION_CHANGE_COMMAND,
-      (_payload, newEditor) => {
+      () => {
         updateToolbar();
         return false;
       },
       COMMAND_PRIORITY_CRITICAL,
     );
   }, [editor, updateToolbar]);
-
-  const formatList = (listType: string) => {
-    console.log(blockType);
-    if (listType === "number" && blockType !== "number") {
-      editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
-      setBlockType("number");
-    } else if (listType === "bullet" && blockType !== "bullet") {
-      editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
-      setBlockType("bullet");
-    } else {
-      editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
-      setBlockType("paragraph");
-    }
-  };
 
   const formatText = (textType: string) => {
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, textType);
@@ -747,8 +737,6 @@ function BlockFormatting({ blockType, editor }: {
                   <button
                     type="button"
                     onClick={() => {
-                      console.log(type);
-
                       if (type === 'paragraph') formatParagraph();
                       if (type === 'h1') formatHeading('h1');
                       if (type === 'h2') formatHeading('h2');

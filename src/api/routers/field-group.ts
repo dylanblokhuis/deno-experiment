@@ -153,6 +153,22 @@ export const fieldGroupRouter = router({
             }).execute();
           }
         }
+
+        // delete the fields that arent used
+        const existingFieldIds = input.fields.map((it) => it.id);
+        const savedFields = await db.selectFrom("field").where(
+          "field_group_id",
+          "=",
+          id,
+        ).select(["id"]).execute();
+        const fieldsToDelete = savedFields.filter((it) =>
+          !existingFieldIds.includes(it.id)
+        );
+        await db.deleteFrom("field").where(
+          "id",
+          "in",
+          fieldsToDelete.map((it) => it.id),
+        ).execute();
       } else {
         const res = await db.insertInto("field_group").values({
           name: input.name,

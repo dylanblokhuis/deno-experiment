@@ -30,7 +30,7 @@
     "@lexical/rich-text": "npm:@lexical/rich-text@0.7.5/LexicalRichText.prod.js",
     "@lexical/code": "npm:@lexical/code@0.7.5/LexicalCode.prod.js",
     "lexical": "npm:lexical/Lexical.prod.js",
-    "@headlessui/react": "npm:@headlessui/react",
+    "@headlessui/react": "npm:@headlessui/react@1.7.7",
     "$lib": "./src/lib.tsx",
     "$lib/": "./src/lib/",
     "$db.server": "./src/db/db.server.ts",

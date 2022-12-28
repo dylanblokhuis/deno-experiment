@@ -50,6 +50,10 @@ export function ValidatedForm<T, U extends z.ZodTypeDef>(
     if (Object.keys(touched).length === 0) return;
 
     const { errors } = validate(props.schema, new FormData(ref.current));
+    if (!errors) return;
+    for (const key of Object.keys(errors)) {
+      if (!touched[key]) delete errors[key];
+    }
     setErrors(errors);
   }, [touched]);
 

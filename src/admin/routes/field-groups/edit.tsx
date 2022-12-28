@@ -205,6 +205,15 @@ export default function EditFieldGroups() {
               {fields.map((field, index) => {
                 return (
                   <TableRow
+                    onDelete={() => {
+                      if (
+                        confirm("Are you sure you want to delete this field?")
+                      ) {
+                        setFields(
+                          fields.filter((_, i) => i !== index),
+                        );
+                      }
+                    }}
                     index={index}
                     field={field}
                     key={index}
@@ -261,7 +270,13 @@ export default function EditFieldGroups() {
   );
 }
 
-function TableRow({ field, index }: { field: Field; index: number }) {
+function TableRow(
+  { field, index, onDelete }: {
+    field: Field;
+    index: number;
+    onDelete: () => void;
+  },
+) {
   const [isOpen, setIsOpen] = useState(true);
   const classes = "py-5 border-b border-slate-200 px-4";
   const { fieldTypes } = useLoaderData<typeof loader>();
@@ -283,25 +298,49 @@ function TableRow({ field, index }: { field: Field; index: number }) {
           <div className="flex items-center justify-between gap-x-4">
             <span>{getFieldType(field.type_id)?.name}</span>
 
-            <button
-              className={isOpen ? "" : "transform -rotate-90"}
-              onClick={() => setIsOpen(!isOpen)}
-              type="button"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
+            <div className="flex items-center gap-x-2">
+              <button
+                onClick={() => onDelete()}
+                type="button"
+                className="text-red-600"
               >
-                <path d="M6 9L12 15 18 9"></path>
-              </svg>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  className="feather feather-x"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M18 6L6 18"></path>
+                  <path d="M6 6L18 18"></path>
+                </svg>
+              </button>
+
+              <button
+                className={isOpen ? "" : "transform -rotate-90"}
+                onClick={() => setIsOpen(!isOpen)}
+                type="button"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M6 9L12 15 18 9"></path>
+                </svg>
+              </button>
+            </div>
           </div>
         </td>
       </tr>

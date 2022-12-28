@@ -57,7 +57,6 @@ export interface FieldTable {
 }
 
 interface PostFieldTable {
-  id: Generated<number>;
   post_id: number;
   field_id: number;
   value: string;

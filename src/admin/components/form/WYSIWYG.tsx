@@ -32,7 +32,6 @@ import {
   $createParagraphNode
 } from "lexical";
 
-// @deno-types="https://esm.sh/@lexical/react@0.7.5/LexicalComposer"
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
@@ -40,10 +39,9 @@ import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 
-// @deno-types="https://esm.sh/@lexical/react@0.7.5/LexicalComposerContext"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
-// @deno-types="https://esm.sh/@lexical/html@0.7.5"
+// @deno-types="npm:@lexical/html@0.7.5"
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 import {
   $isListNode,
@@ -57,8 +55,10 @@ import {
 import { $isLinkNode, LinkNode } from "@lexical/link";
 import { ClientOnly } from "$lib";
 
-// @deno-types="https://esm.sh/@headlessui/react@1.7.7"
+// @deno-types="https://esm.sh/@headlessui/react@1.7.7" - https://publint.dev/@headlessui/react@1.7.7
 import { Menu, Transition } from "@headlessui/react";
+
+// @deno-types="npm:@lexical/rich-text@0.7.5"
 import {
   $createHeadingNode,
   $createQuoteNode,
@@ -67,6 +67,7 @@ import {
   QuoteNode,
   HeadingTagType,
 } from "@lexical/rich-text";
+// @deno-types="npm:@lexical/selection@0.7.5"
 import {
   $getSelectionStyleValueForProperty,
   $isAtNodeEnd,
@@ -75,12 +76,14 @@ import {
   $selectAll,
   $setBlocksType_experimental,
 } from "@lexical/selection";
+// @deno-types="npm:@lexical/utils@0.7.5"
 import {
   $findMatchingParent,
   $getNearestBlockElementAncestorOrThrow,
   $getNearestNodeOfType,
   mergeRegister,
 } from "@lexical/utils";
+// @deno-types="npm:@lexical/code@0.7.5"
 import {
   $createCodeNode,
   $isCodeNode,

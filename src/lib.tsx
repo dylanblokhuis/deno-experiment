@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any ban-types
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext, createContext } from "react";
 import { ModuleTree } from "./main.tsx";
 import config from "./config.ts";
 import type { Admin } from "./admin/layout/admin.tsx";
@@ -21,11 +21,11 @@ export interface App {
   }[];
   variables: ContextVariables;
 }
-export const AppContext = React.createContext<App | null>(null);
-export const RouteContext = React.createContext<string | null>(null);
+export const AppContext = createContext<App | null>(null);
+export const RouteContext = createContext<string | null>(null);
 
 export function Scripts() {
-  const context = React.useContext(AppContext);
+  const context = useContext(AppContext);
   if (!context) return <></>;
 
   const entryModule = context.files.find((file) => {
@@ -135,8 +135,8 @@ export interface RouteModule {
 }
 
 export function useLoaderData<T = AppData>(): SerializeFrom<T> {
-  const appContext = React.useContext(AppContext);
-  const modulePath = React.useContext(RouteContext);
+  const appContext = useContext(AppContext);
+  const modulePath = useContext(RouteContext);
 
   if (!appContext || !modulePath) {
     throw new Error("useLoaderData must be used inside a route component");
@@ -149,8 +149,8 @@ export function useLoaderData<T = AppData>(): SerializeFrom<T> {
 }
 
 export function useActionData<T = AppData>(): SerializeFrom<T> | null {
-  const appContext = React.useContext(AppContext);
-  const modulePath = React.useContext(RouteContext);
+  const appContext = useContext(AppContext);
+  const modulePath = useContext(RouteContext);
 
   if (!appContext || !modulePath) {
     throw new Error("useLoaderData must be used inside a route component");
@@ -309,7 +309,7 @@ export const LiveReload = config.mode !== "development"
   };
 
 export function useApp(): App {
-  const context = React.useContext(AppContext);
+  const context = useContext(AppContext);
   if (!context) throw new Error("useApp used outside of AppContext");
   return context;
 }

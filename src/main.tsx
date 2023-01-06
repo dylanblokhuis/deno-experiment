@@ -1,9 +1,3 @@
-// this is just so a node_modules folder gets created with react in it
-// why? https://github.com/denoland/deno/issues/16653
-import type {} from "npm:react@18";
-import type {} from "npm:react-dom@18";
-import type {} from "npm:@tailwindcss/typography";
-
 import config from "./config.ts";
 import { serve } from "https://deno.land/std@0.165.0/http/server.ts";
 import {
@@ -79,6 +73,8 @@ for (const entry of routes) {
 let lastMtime: Date | null;
 app.get("/tailwind.css", async (c) => {
   try {
+    await import("npm:@tailwindcss/typography")
+
     const stat = await Deno.stat("./dist");
 
     if (stat.mtime?.getTime() !== lastMtime?.getTime()) {

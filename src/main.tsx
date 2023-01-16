@@ -1,3 +1,6 @@
+import type {} from "npm:@types/react"
+import type {} from "npm:@types/react-dom"
+
 import config from "./config.ts";
 import { serve } from "https://deno.land/std@0.165.0/http/server.ts";
 import {
@@ -25,6 +28,7 @@ import routes, { runtimeRoutes } from "./routes.tsx";
 import { Admin } from "./admin/layout/admin.tsx";
 import { migrate } from "$db.server";
 import { Server } from "./server.ts";
+
 
 declare global {
   interface Window {
